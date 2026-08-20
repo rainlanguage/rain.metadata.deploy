@@ -1,4 +1,4 @@
 {
     "detectors_to_exclude": "assembly-usage,solc-version,pragma,unindexed-event-address",
-    "filter_paths": "dependencies,src/abstract/(CloneFactoryDeploySuites|RainDeploySuitesBase)\\.sol"
+    "filter_paths": "dependencies,src/abstract/(MetaBoardDeploySuites|RainDeploySuitesBase)\\.sol"
 }
