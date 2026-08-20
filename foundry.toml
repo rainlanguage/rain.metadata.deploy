@@ -1,0 +1,102 @@
+# Release metadata, not foundry config. `[external.*]` is the namespace foundry
+# reserves for other tools and ignores outright, so it raises no unknown-section
+# warning and `forge config --fix` leaves it alone (a section foundry does not
+# reserve is read as a profile, warned about on every invocation and rewritten
+# into `[profile.*]` by the fixer). `version` is the last-published Soldeer
+# release — a deploy repo moves it only via a manual `sol-v*` tag, in lockstep
+# with the frozen `src/generated/<tag>/` snapshot it names — and is read here by
+# `script/Build.sol`'s `cutRelease()` to locate the snapshot it freezes.
+#
+# Nothing is published yet, so this names the version the FIRST `sol-v*` tag
+# will cut, and `src/generated/` holds no frozen tag directory until it does.
+[external.package]
+name = "rain-metadata-deploy"
+version = "0.1.0"
+
+[profile.default]
+src = 'src'
+test = 'test'
+out = 'out'
+
+# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+
+# `MetaBoard`'s deterministic deploy address, runtime codehash and creation
+# bytecode are recorded in the generated `src/generated/candidate/MetaBoard.sol`
+# snapshot and are a pure function of the creation code, which is a function of
+# these settings. They are pinned exactly rather than floated so the record
+# cannot move under a compiler or default-target change.
+solc = "0.8.25"
+optimizer = true
+optimizer_runs = 100000
+
+evm_version = "cancun"
+
+bytecode_hash = "none"
+cbor_metadata = false
+
+# `script/Build.sol` writes the generated candidate snapshot and the generated
+# libs under `src/`, and reads the release version from this file when
+# `cutRelease()` runs. `MetaBoardDeploySnapshotTest`'s inherited frozen-record
+# walk reads `src/generated/` too, so tests need the same read access. Nothing
+# else in this repo touches the filesystem.
+fs_permissions = [
+  { access = "read", path = "./foundry.toml" },
+  { access = "read-write", path = "./src" },
+]
+libs = ["dependencies"]
+
+[fuzz]
+runs = 2048
+
+# Behaviour-only view of the test suite, for mutation and coverage campaigns.
+# The snapshot and candidate suites tie the generated record to
+# `type(MetaBoard).creationCode`, so compiler output moves for any edit to any
+# source file reachable from `MetaBoard` and both contracts fail under every
+# source mutation, observable or not — a campaign including them scores every
+# mutant as killed. This profile drops them and inherits everything else from
+# `default`.
+[profile.mutation]
+no_match_contract = "MetaBoardDeploySnapshotTest|LibMetaBoardDeployCandidateTest|LibMetaBoardDeployTest"
+
+# `recursive_deps` is off, so every package an import resolves through is
+# declared here.
+[dependencies]
+forge-std = "1.16.2"
+# `IMetaBoardV1_2`, `IMetaV1_2`, `LibIMetaBoardV1_2` and `LibMeta` — the library
+# half `MetaBoard` is nothing but a delegation into.
+"rain-metadata" = "0.1.5"
+"rain-deploy" = "0.1.7"
+# `LibRainDeploySnapshot` — reached from `script/Build.sol` and the shipped
+# verify abstracts — emits the generated record via `LibCodeGen`/`LibFs`.
+"rain-sol-codegen" = "0.1.36"
+
+[soldeer]
+recursive_deps = false
+
+# One alias per network `LibRainDeploy.supportedNetworks()` returns, which is
+# what `script/Deploy.sol` broadcasts to.
+[rpc_endpoints]
+arbitrum = "${ARBITRUM_RPC_URL}"
+base = "${BASE_RPC_URL}"
+base_sepolia = "${BASE_SEPOLIA_RPC_URL}"
+ethereum = "${ETHEREUM_RPC_URL}"
+flare = "${FLARE_RPC_URL}"
+hyperevm = "${HYPEREVM_RPC_URL}"
+polygon = "${POLYGON_RPC_URL}"
+
+# `rainix-manual-sol-artifacts` passes `--verify` by default and exports exactly
+# these variable names, so a deploy without this section broadcasts and then
+# fails with no API key configured for the chain. One entry per
+# `[rpc_endpoints]` alias, because the deploy goes to all of them.
+#
+# "chain" is stated on the entries whose alias foundry does not itself resolve
+# to a chain, as foundry raises a config error for an unknown alias with
+# neither "chain" nor "url".
+[etherscan]
+arbitrum = { key = "${CI_DEPLOY_ARBITRUM_ETHERSCAN_API_KEY}" }
+base = { key = "${CI_DEPLOY_BASE_ETHERSCAN_API_KEY}" }
+base_sepolia = { key = "${CI_DEPLOY_BASE_SEPOLIA_ETHERSCAN_API_KEY}" }
+ethereum = { key = "${CI_DEPLOY_ETHEREUM_ETHERSCAN_API_KEY}", chain = 1 }
+flare = { key = "${CI_DEPLOY_FLARE_ETHERSCAN_API_KEY}" }
+hyperevm = { key = "${CI_DEPLOY_HYPEREVM_ETHERSCAN_API_KEY}", chain = 999 }
+polygon = { key = "${CI_DEPLOY_POLYGON_ETHERSCAN_API_KEY}" }

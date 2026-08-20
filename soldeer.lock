@@ -1,0 +1,27 @@
+[[dependencies]]
+name = "forge-std"
+version = "1.16.2"
+url = "https://soldeer-revisions.s3.amazonaws.com/forge-std/1_16_2_03-07-2026_07:37:45_forge-std-1.16.zip"
+checksum = "405dccc9d60d753f6abc412b4adf0359f4390f65dbadbbb277a12b4946ed8969"
+integrity = "5fb4325b60d7d4194bd0481e2f94398cf1d9c6561dd12a66fb2748ef4a68205f"
+
+[[dependencies]]
+name = "rain-deploy"
+version = "0.1.7"
+url = "https://soldeer-revisions.s3.amazonaws.com/rain-deploy/0_1_7_19-08-2026_05:57:12_rain.zip"
+checksum = "d0e868184ad16fc6abb704bb1dddab57ebf2beb042529690e030568f5c81a9b3"
+integrity = "e51da6f2b3a0f427a0aac5d7714bed2027f5cf0f39b31f0692e9623ceeaa47f2"
+
+[[dependencies]]
+name = "rain-metadata"
+version = "0.1.5"
+url = "https://soldeer-revisions.s3.amazonaws.com/rain-metadata/0_1_5_20-08-2026_18:36:55_rain.zip"
+checksum = "e893c2ad2007b0c6cca3f28f3486118a32b1ed27b8799c7601f1944b0b4637db"
+integrity = "7413cd277aa7a36fe995d42392af14b0859bed3aed7eb55ac1b2f6ffcdbfdbb6"
+
+[[dependencies]]
+name = "rain-sol-codegen"
+version = "0.1.36"
+url = "https://soldeer-revisions.s3.amazonaws.com/rain-sol-codegen/0_1_36_18-08-2026_09:20:33_rain.sol.zip"
+checksum = "b5d101d46941a95fee441224e101004139814ae9afa2793138874bd7e93991ff"
+integrity = "164e2655ac8b66bcf52c799421706d3dfaab987addaaeadd74574e70fd2eb6ed"

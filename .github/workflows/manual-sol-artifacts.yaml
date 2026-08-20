@@ -1,0 +1,9 @@
+name: Manual sol artifacts
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: rainlanguage/rainix/.github/workflows/rainix-manual-sol-artifacts.yaml@main
+    with:
+      suite: metaboard
+    secrets: inherit
