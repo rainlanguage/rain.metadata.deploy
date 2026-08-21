@@ -6,9 +6,6 @@
 # release — a deploy repo moves it only via a manual `sol-v*` tag, in lockstep
 # with the frozen `src/generated/<tag>/` snapshot it names — and is read here by
 # `script/Build.sol`'s `cutRelease()` to locate the snapshot it freezes.
-#
-# Nothing is published yet, so this names the version the FIRST `sol-v*` tag
-# will cut, and `src/generated/` holds no frozen tag directory until it does.
 [external.package]
 name = "rain-metadata-deploy"
 version = "0.1.0"
