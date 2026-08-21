@@ -8,6 +8,19 @@ on:
           schema and mappings are not in this repo; only networks.json is.
         required: false
         default: main
+# Read-only, stated rather than left to the repo default. This job fetches and
+# then RUNS another repo's `package.json` install scripts, so the ambient
+# `GITHUB_TOKEN` is reachable from code this repo did not review; nothing here
+# needs to write anything back.
+permissions:
+  contents: read
+# One deploy at a time. `GOLDSKY_SUBGRAPH_NAME` is a single name, so two
+# dispatches publish over each other. Never cancelled: a half-finished
+# five-network loop leaves Goldsky holding some networks from one run and some
+# from the other, which is worse than waiting.
+concurrency:
+  group: subgraph-manual-deploy
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,10 +28,14 @@ jobs:
       GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
       GOLDSKY_SUBGRAPH_NAME: metaboard
     steps:
+      # `persist-credentials: false` on both checkouts: the fetched subgraph
+      # source's install scripts run in this job, and a git config holding the
+      # token is one `git config --get` away from them. Nothing here pushes.
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
       # The subgraph is split on whether a file carries a deployment fact
       # (rainlanguage/rain.metadata#149). This repo holds `networks.json` and
       # nothing else under `subgraph/`; the manifest, schema, mappings and
@@ -31,6 +48,7 @@ jobs:
           repository: rainlanguage/rain.metadata
           ref: ${{ inputs.metadata-ref }}
           path: .subgraph-source
+          persist-credentials: false
       - uses: nixbuild/nix-quick-install-action@v30
         with:
           nix_conf: |
@@ -92,3 +110,14 @@ jobs:
           echo "::group::Deployed Goldsky URLs"
           grep -oE 'https://api\.goldsky\.com/api/public/[^[:space:]]+/gn' deploy.log | sort -u | tee deployed_urls.txt
           echo "::endgroup::"
+          # Into the run summary as well as the log: `deployed_urls.txt` lives
+          # in the runner workspace and is gone with it, and the log is where
+          # nobody looks for the one fact a deploy produces. The summary already
+          # names the source commit these URLs were built from, so the two sit
+          # together and the pair survives the runner.
+          {
+            echo
+            echo "Deployed:"
+            echo
+            sed 's|^|- |' deployed_urls.txt
+          } >> "$GITHUB_STEP_SUMMARY"
