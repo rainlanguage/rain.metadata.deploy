@@ -42,8 +42,10 @@ cbor_metadata = false
 # `test/src/subgraph/SubgraphDeployRecord.t.sol` reads the deploy record under
 # `./subgraph`. That grant is the directory rather than the one file because
 # `.gitignore` already states the boundary — this repo owns `networks.json`
-# there and nothing else under it is committed — and read-only, so the source
-# the deploy workflow drops beside it is unwritable either way.
+# there and nothing else under it is committed — and read-only, so no Forge
+# cheatcode can write into it. That is the whole of what `fs_permissions`
+# governs: the deploy workflow drops the fetched subgraph source beside the
+# table with its own `cp -R`, which this file has no say over.
 fs_permissions = [
   { access = "read", path = "./foundry.toml" },
   { access = "read", path = "./subgraph" },

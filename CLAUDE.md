@@ -51,9 +51,9 @@ half. Only the subgraph's deployment record is here — see below.
   rewrites the manifest in place — hence `.gitignore` ignores all of `subgraph/`
   except the table. Nothing else here runs a subgraph command.
 - The table names the **v1** `MetaBoard` (`0xfb8437Ae...`), deployed before this
-  repo existed. This repo holds no record of v1 and is not meant to: that
-  address is what the subgraph indexes today, NOT a historical pin to
-  reconstruct or purge.
+  repo existed. This repo pins no v1 bytecode and is not meant to: that address
+  is what the subgraph indexes today, NOT a historical pin to reconstruct or
+  purge.
 - `SubgraphDeployRecord.t.sol`'s release-coverage assertion is EMPTY-TRUE until
   the first `sol-v*` tag and arms itself there. A mutation that puts a release
   into the record shows it bites.
