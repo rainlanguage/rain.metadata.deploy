@@ -6,6 +6,14 @@ pragma solidity ^0.8.25;
 
 import {DeploySuite} from "../abstract/RainDeploySuitesBase.sol";
 
+import {
+    DEPLOYED_ADDRESS as MetaBoard_0_1_0_DEPLOYED_ADDRESS,
+    BYTECODE_HASH as MetaBoard_0_1_0_BYTECODE_HASH,
+    CREATION_CODE as MetaBoard_0_1_0_CREATION_CODE,
+    RUNTIME_CODE as MetaBoard_0_1_0_RUNTIME_CODE,
+    DEPENDENCIES as MetaBoard_0_1_0_DEPENDENCIES
+} from "../generated/0_1_0/MetaBoard.sol";
+
 /// @title LibMetaBoardReleased
 /// @notice Every frozen release of `MetaBoard`: one entry per file in
 /// the append-only `src/generated/<tag>/` record, in tag order.
@@ -26,7 +34,16 @@ library LibMetaBoardReleased {
     /// Every frozen release, in tag order.
     /// @return The released suites.
     function releasedSuites() internal pure returns (DeploySuite[] memory) {
-        DeploySuite[] memory suites = new DeploySuite[](0);
+        DeploySuite[] memory suites = new DeploySuite[](1);
+        suites[0] = DeploySuite({
+            suite: "metaboard@0_1_0",
+            creationCode: MetaBoard_0_1_0_CREATION_CODE,
+            storedDeployedAddress: MetaBoard_0_1_0_DEPLOYED_ADDRESS,
+            storedBytecodeHash: MetaBoard_0_1_0_BYTECODE_HASH,
+            storedRuntimeCode: MetaBoard_0_1_0_RUNTIME_CODE,
+            artifactPath: "src/concrete/MetaBoard.sol:MetaBoard",
+            dependencies: abi.decode(MetaBoard_0_1_0_DEPENDENCIES, (address[]))
+        });
         return suites;
     }
 }
