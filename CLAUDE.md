@@ -48,22 +48,21 @@ half. Only the subgraph's deployment record is here — see below.
   matchstick suite are SOURCE and stay in `rain.metadata`, which pins the
   manifest to the interface it indexes. `Subgraph manual deploy` fetches that
   source (`metadata-ref`) and merges it in beside the table, and `graph build`
-  rewrites the manifest in place — hence `.gitignore` keeps everything under
-  `subgraph/` but the table uncommittable. Nothing else here runs a subgraph
-  command.
+  rewrites the manifest in place — hence `.gitignore` ignores all of `subgraph/`
+  except the table. Nothing else here runs a subgraph command.
 - The table names the **v1** `MetaBoard` (`0xfb8437Ae...`), deployed before this
   repo existed. This repo holds no record of v1 and is not meant to: that
   address is what the subgraph indexes today, NOT a historical pin to
   reconstruct or purge.
 - `SubgraphDeployRecord.t.sol`'s release-coverage assertion is EMPTY-TRUE until
-  the first `sol-v*` tag and arms itself there. A mutation that puts a
-  release into the record shows it bites.
+  the first `sol-v*` tag and arms itself there. A mutation that puts a release
+  into the record shows it bites.
 - The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
   `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
   its mapping in that test in the same change, or it fails closed.
 - The Goldsky version is `<address>-<short commit of THIS repo>`, not of the
   source, so two dispatches from one commit against different `metadata-ref`s
-  collide and the second is skipped as already deployed.
+  collide and the second is skipped as already deployed (rainix#354).
 
 ## Release / deploy shape
 
