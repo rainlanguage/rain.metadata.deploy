@@ -50,6 +50,15 @@ struct ApiErrorBody {
 /// Only the fields classification needs are modelled, and every optional one
 /// carries `#[serde(default)]` so an added or removed field upstream degrades
 /// to a missing value rather than failing the whole report.
+///
+/// Multi-word fields carry a camelCase `alias` alongside the snake_case name.
+/// The only Goldsky body captured verbatim is the 401 (`{"statusCode": ..,
+/// "message": ".."}`), and a serializer emitting `statusCode` emits
+/// `graphqlEndpoint` too — but the authenticated 200 has never been seen, so
+/// neither spelling is confirmed. Accepting both is strictly safer than
+/// guessing either: a missed `targetVersion` would make every tag read as
+/// dangling, a dangling tag protects nothing, and so a live tag's target
+/// would be offered up as a reaping candidate.
 #[derive(Debug, Clone, Deserialize)]
 pub struct SubgraphJson {
     pub name: String,
@@ -60,7 +69,7 @@ pub struct SubgraphJson {
     pub network: String,
     #[serde(default)]
     pub status: Option<String>,
-    #[serde(default)]
+    #[serde(default, alias = "graphqlEndpoint")]
     pub graphql_endpoint: String,
     #[serde(default)]
     pub deployments: Vec<DeploymentJson>,
@@ -68,14 +77,14 @@ pub struct SubgraphJson {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct TagJson {
-    #[serde(default)]
+    #[serde(default, alias = "targetVersion")]
     pub target_version: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeploymentJson {
     /// Epoch millis. Goldsky's CLI reads this field as a JS `Date` argument.
-    #[serde(default)]
+    #[serde(default, alias = "createdAt")]
     pub created_at: Option<i64>,
 }
 
@@ -322,6 +331,70 @@ mod tests {
         assert_eq!(entry.kind, Kind::Deployment);
     }
 
+    // ---------- camelCase spellings ----------
+    //
+    // The 200 listing has never been seen live. Goldsky's error body is
+    // camelCase (`statusCode`), so the success body may be too; both spellings
+    // are accepted so neither guess can be wrong.
+
+    #[test]
+    fn a_camel_case_target_version_still_targets_its_alias() {
+        let entry = parse(serde_json::json!({
+            "name": "metaboard-base",
+            "version": "latest",
+            "tag": { "targetVersion": "0xfb84-1106a15" },
+            "deployments": []
+        }))
+        .into_entry();
+
+        // The load-bearing assertion: this must NOT read as a dangling tag. A
+        // dangling tag protects nothing, so dropping the target here would
+        // offer a live tag's target up as a reaping candidate.
+        assert_eq!(
+            entry.kind,
+            Kind::TagAlias {
+                target_version: Some("0xfb84-1106a15".to_string())
+            }
+        );
+    }
+
+    #[test]
+    fn a_camel_case_created_at_is_read_as_a_timestamp() {
+        let entry = parse(serde_json::json!({
+            "name": "metaboard-base",
+            "version": "v1",
+            "deployments": [{ "createdAt": 1_700_000_000_000i64 }]
+        }))
+        .into_entry();
+
+        assert_eq!(entry.created_at_ms, Some(1_700_000_000_000));
+    }
+
+    #[test]
+    fn a_camel_case_graphql_endpoint_is_read() {
+        let entry = parse(serde_json::json!({
+            "name": "metaboard-base",
+            "version": "v1",
+            "graphqlEndpoint": "/gn",
+            "deployments": []
+        }))
+        .into_entry();
+
+        assert_eq!(entry.graphql_endpoint, "/gn");
+    }
+
+    #[test]
+    fn both_spellings_of_created_at_contribute_to_the_newest() {
+        let entry = parse(serde_json::json!({
+            "name": "metaboard-base",
+            "version": "v1",
+            "deployments": [{ "created_at": 100i64 }, { "createdAt": 900i64 }]
+        }))
+        .into_entry();
+
+        assert_eq!(entry.created_at_ms, Some(900));
+    }
+
     // ---------- error bodies ----------
 
     #[test]
@@ -411,6 +484,48 @@ mod tests {
         assert_eq!(entries.len(), 2);
         assert_eq!(entries[0].kind, Kind::Deployment);
         assert!(entries[1].is_tag_alias());
+    }
+
+    #[tokio::test]
+    async fn an_entirely_camel_case_listing_reduces_the_same_way() {
+        let server = MockServer::start_async().await;
+        let mock = server
+            .mock_async(|when, then| {
+                when.method(GET).path(SUBGRAPHS_PATH);
+                then.status(200).json_body(serde_json::json!({ "data": [
+                    {
+                        "name": "metaboard-base",
+                        "version": "0xfb84-1106a15",
+                        "network": "base",
+                        "status": "Active",
+                        "graphqlEndpoint": "/gn",
+                        "deployments": [{ "createdAt": 1_700_000_000_000i64 }]
+                    },
+                    {
+                        "name": "metaboard-base",
+                        "version": "latest",
+                        "tag": { "targetVersion": "0xfb84-1106a15" },
+                        "network": "base",
+                        "deployments": []
+                    }
+                ]}));
+            })
+            .await;
+
+        let client = GoldskyClient::new(&server.base_url(), "token").unwrap();
+        let entries = client.list_subgraphs().await.unwrap();
+
+        mock.assert_async().await;
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].kind, Kind::Deployment);
+        assert_eq!(entries[0].graphql_endpoint, "/gn");
+        assert_eq!(entries[0].created_at_ms, Some(1_700_000_000_000));
+        assert_eq!(
+            entries[1].kind,
+            Kind::TagAlias {
+                target_version: Some("0xfb84-1106a15".to_string())
+            }
+        );
     }
 
     #[tokio::test]
