@@ -15,6 +15,11 @@
 # mutating Solidity statements, and all of them ship silently without these
 # assertions.
 #
+# `M06` is what the address-agreement assertion missed until the probe asked:
+# agreement between the rows that exist says nothing about a row that does not,
+# so a name misspelled on one network left four agreeing entries and one
+# singleton agreeing with itself.
+#
 # `M04` is the one that matters most. `LibMetaBoardReleased.releasedSuites()` is
 # empty today, so the release-coverage assertion is empty-true and cannot
 # demonstrate itself on the committed tree. Putting a release into the record is
@@ -75,3 +80,11 @@ target = '''  "flare": {
     }
   }'''
 replacement = '''  "flare": {}'''
+
+[[mutants]]
+name = "M06 a datasource is renamed on one network and vanishes from it"
+file = "subgraph/networks.json"
+target = '''  "flare": {
+    "metaboard0": {'''
+replacement = '''  "flare": {
+    "metaboard1": {'''

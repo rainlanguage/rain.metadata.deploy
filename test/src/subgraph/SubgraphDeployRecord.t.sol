@@ -195,8 +195,17 @@ contract SubgraphDeployRecordTest is MetaBoardDeploySuites, Test {
     /// Per NAME rather than per file: a second deployment is added as a second
     /// datasource (`metaboard1`) across the same networks, and the file is then
     /// correctly holding two addresses.
+    ///
+    /// EVERYWHERE is asserted as well as SAME, because agreement between the
+    /// rows that happen to exist says nothing about a row that does not. A name
+    /// present on four networks and misspelled on the fifth leaves four
+    /// agreeing entries and one singleton group that agrees with itself, so the
+    /// address comparison alone passes on exactly the hand-edit it is for —
+    /// while the fifth chain silently indexes nothing under that name.
     function testEachDataSourceIndexesOneAddressEverywhere() external view {
         SubgraphDataSource[] memory sources = dataSources();
+        string[] memory networks = graphNetworks();
+
         for (uint256 i = 0; i < sources.length; i++) {
             for (uint256 j = i + 1; j < sources.length; j++) {
                 if (keccak256(bytes(sources[i].name)) == keccak256(bytes(sources[j].name))) {
@@ -213,6 +222,20 @@ contract SubgraphDeployRecordTest is MetaBoardDeploySuites, Test {
                         )
                     );
                 }
+            }
+
+            for (uint256 n = 0; n < networks.length; n++) {
+                bool present = false;
+                for (uint256 j = 0; j < sources.length; j++) {
+                    if (
+                        keccak256(bytes(sources[j].name)) == keccak256(bytes(sources[i].name))
+                            && keccak256(bytes(sources[j].graphNetwork)) == keccak256(bytes(networks[n]))
+                    ) {
+                        present = true;
+                        break;
+                    }
+                }
+                assertTrue(present, string.concat("datasource ", sources[i].name, " is not indexed on ", networks[n]));
             }
         }
     }
