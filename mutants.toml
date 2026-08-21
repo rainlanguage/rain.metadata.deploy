@@ -1,0 +1,109 @@
+# Mutation probe config for the subgraph/deploy-record wiring
+# (rainlanguage/rain.metadata.deploy#2).
+#
+# The thing under test here is mostly DATA — `subgraph/networks.json`,
+# `subgraph/subgraph.yaml`, the matchstick fixture — plus the two generated /
+# declared records the data is checked against. So the mutants break the data
+# and the record rather than the concrete's logic: that is where the failure
+# mode lives. A hand-edited address, a start block typed on one network and
+# forgotten on the others, a manifest left pointing at the ABI it used to read
+# before the split — none of those are reachable by mutating Solidity
+# statements, and all of them ship silently without these assertions.
+#
+# `M11` is the one that matters most. `LibMetaBoardReleased.releasedSuites()`
+# is empty today, so the release-coverage assertion is empty-true and cannot
+# demonstrate itself on the committed tree. Putting a release into the record
+# is what shows the assertion is armed rather than decorative: it is the same
+# edit `cutRelease()` will make at the first `sol-v*` tag.
+
+[suite]
+root = "."
+command = ["nix", "develop", "--command", "forge", "test"]
+proof = '(\d+) passed; (\d+) failed'
+fail-pattern = '\[FAIL[^\]]*\] (\S+)'
+timeout-secs = 1800
+
+[[mutants]]
+name = "M01 networks.json flare indexes a different address from every other network"
+file = "subgraph/networks.json"
+target = '''  "flare": {
+    "metaboard0": {
+      "address": "0xfb8437AeFBB8031064E274527C5fc08e30Ac6928",'''
+replacement = '''  "flare": {
+    "metaboard0": {
+      "address": "0x0000000000000000000000000000000000000001",'''
+
+[[mutants]]
+name = "M02 networks.json flare start block reset to genesis"
+file = "subgraph/networks.json"
+target = '"startBlock": 55347067'
+replacement = '"startBlock": 0'
+
+[[mutants]]
+name = "M03 networks.json indexes a network this repo does not deploy to"
+file = "subgraph/networks.json"
+target = '  "flare": {'
+replacement = '  "fantom": {'
+
+[[mutants]]
+name = "M04 subgraph.yaml template address drifts from networks.json"
+file = "subgraph/subgraph.yaml"
+target = '      address: "0xfb8437AeFBB8031064E274527C5fc08e30Ac6928"'
+replacement = '      address: "0x0000000000000000000000000000000000000002"'
+
+[[mutants]]
+name = "M05 subgraph.yaml template start block drifts from networks.json"
+file = "subgraph/subgraph.yaml"
+target = '      startBlock: 82855948'
+replacement = '      startBlock: 82855949'
+
+[[mutants]]
+name = "M06 subgraph.yaml datasource renamed away from networks.json"
+file = "subgraph/subgraph.yaml"
+target = '    name: metaboard0'
+replacement = '    name: metaboard1'
+
+[[mutants]]
+name = "M07 subgraph.yaml template network is not a row of networks.json"
+file = "subgraph/subgraph.yaml"
+target = '    network: matic'
+replacement = '    network: optimism'
+
+[[mutants]]
+name = "M08 subgraph.yaml indexes a re-typed MetaV1_2 the interface does not emit"
+file = "subgraph/subgraph.yaml"
+target = '        - event: MetaV1_2(address,bytes32,bytes)'
+replacement = '        - event: MetaV1_2(address,bytes32,bytes32)'
+
+[[mutants]]
+name = "M09 subgraph.yaml reads its ABI from the dependency interface, not this repo's concrete"
+file = "subgraph/subgraph.yaml"
+target = '          file: ../out/MetaBoard.sol/MetaBoard.json'
+replacement = '          file: ../out/IMetaBoardV1_2.sol/IMetaBoardV1_2.json'
+
+[[mutants]]
+name = "M10 matchstick fixture address drifts from the indexed address"
+file = "subgraph/tests/address.ts"
+target = '  "0xfb8437AeFBB8031064E274527C5fc08e30Ac6928",'
+replacement = '  "0x0000000000000000000000000000000000000003",'
+
+[[mutants]]
+name = "M11 a frozen release exists that the subgraph does not index"
+file = "src/lib/LibMetaBoardReleased.sol"
+target = '        DeploySuite[] memory suites = new DeploySuite[](0);'
+replacement = '''        DeploySuite[] memory suites = new DeploySuite[](1);
+        suites[0] = DeploySuite({
+            suite: "metaboard@9_9_9",
+            creationCode: hex"00",
+            storedDeployedAddress: address(0x00000000000000000000000000000000000000A1),
+            storedBytecodeHash: bytes32(0),
+            storedRuntimeCode: hex"00",
+            artifactPath: "src/concrete/MetaBoard.sol:MetaBoard",
+            dependencies: new address[](0)
+        });'''
+
+[[mutants]]
+name = "M12 the concrete moves and the manifest's ABI path is left behind"
+file = "src/abstract/MetaBoardDeploySuites.sol"
+target = '                artifactPath: "src/concrete/MetaBoard.sol:MetaBoard",'
+replacement = '                artifactPath: "src/concrete/v2/MetaBoardV2.sol:MetaBoardV2",'

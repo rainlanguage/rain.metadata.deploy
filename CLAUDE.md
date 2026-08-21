@@ -11,8 +11,10 @@ rain.metadata.deploy is the **deploy half** of `rain.metadata`: the concrete
 point into `LibIMetaBoardV1_2`) plus its deployed address + codehash pins. The
 `IMeta*` **interfaces and the metaboard logic are NOT here** — they live in
 `rain.metadata` and arrive as the `rain-metadata` Soldeer dependency
-(`dependencies/rain-metadata-<version>/src/`). The metaboard subgraph and the
-rust crates are not here either; they stay in `rain.metadata`.
+(`dependencies/rain-metadata-<version>/src/`). The rust crates are not here
+either: `crates/metaboard` is a Cynic client keyed by endpoint URL, with no
+address or Goldsky coupling, so it stays with the library half. The metaboard
+**subgraph** IS here — see below.
 
 ## Conventions an agent would get wrong
 
@@ -39,6 +41,27 @@ rust crates are not here either; they stay in `rain.metadata`.
 - Generated files (`src/generated/`, `src/lib/LibMetaBoardDeploy.sol`,
   `src/lib/LibMetaBoardReleased.sol`, `src/lib/LibReleasedSuites.sol`) — do not
   hand-edit; `script/Build.sol` regenerates them.
+
+## The subgraph (#2)
+
+- `subgraph/networks.json` is a deploy record in JSON — the per-network table of
+  the address the subgraph indexes — which is why it is here rather than in the
+  library half.
+- It names the **v1** `MetaBoard` (`0xfb8437Ae...`), deployed before this repo
+  existed. This repo holds no record of v1 and is not meant to: that address is
+  what the subgraph indexes today, NOT a historical pin to reconstruct or purge.
+- `test/src/subgraph/SubgraphDeployRecord.t.sol` is the wiring the move exists
+  for — manifest, table and matchstick fixture checked against
+  `LibMetaBoardReleased`, the candidate's `artifactPath` and
+  `LibRainDeploy.supportedNetworks()`. It is Solidity in the ordinary
+  `rainix-sol` lane, so it needs no docker and no node.
+- Its release-coverage assertion is EMPTY-TRUE until the first `sol-v*` tag and
+  arms itself at that tag. `mutants.toml`'s `M11` is what shows it bites.
+- The manifest reads its ABI from `../out/MetaBoard.sol/MetaBoard.json` — this
+  repo's own concrete — so `subgraph-build` needs `forge soldeer install` first.
+- The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
+  `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
+  its mapping in that test in the same change, or it fails closed.
 
 ## Release / deploy shape
 

@@ -1,0 +1,35 @@
+name: Subgraph manual deploy
+on: [workflow_dispatch]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
+      GOLDSKY_SUBGRAPH_NAME: metaboard
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: nixbuild/nix-quick-install-action@v30
+        with:
+          nix_conf: |
+            keep-env-derivations = true
+            keep-outputs = true
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 1G
+      - name: Install soldeer dependencies
+        run: nix develop github:rainlanguage/rainix#sol-shell -c forge soldeer install
+      - name: Deploy and capture URLs
+        id: deploy
+        run: |
+          set -o pipefail
+          nix develop --command subgraph-deploy 2>&1 | tee deploy.log
+          echo
+          echo "::group::Deployed Goldsky URLs"
+          grep -oE 'https://api\.goldsky\.com/api/public/[^[:space:]]+/gn' deploy.log | sort -u | tee deployed_urls.txt
+          echo "::endgroup::"

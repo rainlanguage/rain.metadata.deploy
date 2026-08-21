@@ -41,6 +41,7 @@ cbor_metadata = false
 # else in this repo touches the filesystem.
 fs_permissions = [
   { access = "read", path = "./foundry.toml" },
+  { access = "read", path = "./subgraph" },
   { access = "read-write", path = "./src" },
 ]
 libs = ["dependencies"]
