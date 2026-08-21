@@ -5,7 +5,6 @@ pragma solidity =0.8.25;
 import {Test} from "forge-std-1.16.2/src/Test.sol";
 import {LibRainDeploy} from "rain-deploy-0.1.7/src/lib/LibRainDeploy.sol";
 import {DeploySuite} from "src/abstract/RainDeploySuitesBase.sol";
-import {MetaBoardDeploySuites} from "src/abstract/MetaBoardDeploySuites.sol";
 import {LibMetaBoardReleased} from "src/lib/LibMetaBoardReleased.sol";
 
 /// Thrown when `networks.json` names a network with no declared correspondence
@@ -85,7 +84,7 @@ struct SubgraphDataSource {
 /// names a freshly broadcast candidate that no frozen snapshot covers yet. An
 /// assertion that failed during that window would be an assertion the release
 /// process has to be worked around.
-contract SubgraphDeployRecordTest is MetaBoardDeploySuites, Test {
+contract SubgraphDeployRecordTest is Test {
     /// The subgraph's per-network deployment table, and the whole of this
     /// repo's share of the subgraph.
     string constant NETWORKS_JSON = "subgraph/networks.json";

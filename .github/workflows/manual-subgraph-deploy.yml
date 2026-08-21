@@ -101,23 +101,55 @@ jobs:
               test -f "subgraph/$abi"
             done <<< "$abis"
           '
+      # `subgraph-deploy` runs `npm ci` and then `graph build --network`, and
+      # `graph build` does NOT codegen. It compiles `src/metaBoard.ts`, which
+      # imports `../generated/metaboard0/MetaBoard` and `../generated/schema` —
+      # generated files, gitignored in the library half, so they never arrive
+      # with the fetched source. Without this step the AssemblyScript compile
+      # fails on two unresolved imports for every network in the loop.
+      #
+      # `npm ci` here is the same install `subgraph-deploy` repeats. It removes
+      # `node_modules` and not `generated/`, so the types survive into it.
+      - name: Generate the subgraph types
+        run: nix develop --command bash -c 'cd subgraph && npm ci && graph codegen'
       - name: Deploy and capture URLs
         id: deploy
         run: |
           set -o pipefail
           nix develop --command subgraph-deploy 2>&1 | tee deploy.log
           echo
+          # `subgraph-deploy` skips a network whose version Goldsky already
+          # holds, and prints no URL for it. A re-dispatch that skips every
+          # network is a SUCCESSFUL no-op matching nothing, and `grep` answers
+          # no-match with exit 1 — which `pipefail` plus the runner's `-e` would
+          # read as a failed deploy. So exit 1 is folded into an empty list, and
+          # only exit 1: anything above it is `grep` failing rather than not
+          # matching, and still fails the step.
+          matched=0
+          grep -oE 'https://api\.goldsky\.com/api/public/[^[:space:]]+/gn' deploy.log > matched_urls.txt || matched=$?
+          if [ "$matched" -gt 1 ]; then
+            exit "$matched"
+          fi
+          sort -u matched_urls.txt > deployed_urls.txt
           echo "::group::Deployed Goldsky URLs"
-          grep -oE 'https://api\.goldsky\.com/api/public/[^[:space:]]+/gn' deploy.log | sort -u | tee deployed_urls.txt
+          cat deployed_urls.txt
           echo "::endgroup::"
           # Into the run summary as well as the log: `deployed_urls.txt` lives
           # in the runner workspace and is gone with it, and the log is where
           # nobody looks for the one fact a deploy produces. The summary already
           # names the source commit these URLs were built from, so the two sit
           # together and the pair survives the runner.
+          #
+          # The empty case is spelled rather than left as an empty list: a
+          # summary reading "Deployed:" and then nothing looks like a broken
+          # step rather than the no-op it is.
           {
             echo
-            echo "Deployed:"
-            echo
-            sed 's|^|- |' deployed_urls.txt
+            if [ -s deployed_urls.txt ]; then
+              echo "Deployed:"
+              echo
+              sed 's|^|- |' deployed_urls.txt
+            else
+              echo "Deployed: nothing. Every network already held this version."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

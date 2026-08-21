@@ -34,11 +34,16 @@ evm_version = "cancun"
 bytecode_hash = "none"
 cbor_metadata = false
 
-# `script/Build.sol` writes the generated candidate snapshot and the generated
-# libs under `src/`, and reads the release version from this file when
-# `cutRelease()` runs. `MetaBoardDeploySnapshotTest`'s inherited frozen-record
-# walk reads `src/generated/` too, so tests need the same read access. Nothing
-# else in this repo touches the filesystem.
+# The filesystem access in this repo. `script/Build.sol` writes the generated
+# candidate snapshot and the generated libs under `src/`, and reads the release
+# version from this file when `cutRelease()` runs;
+# `MetaBoardDeploySnapshotTest`'s inherited frozen-record walk reads
+# `src/generated/` too, so tests need the same read access.
+# `test/src/subgraph/SubgraphDeployRecord.t.sol` reads the deploy record under
+# `./subgraph`. That grant is the directory rather than the one file because
+# `.gitignore` already states the boundary — this repo owns `networks.json`
+# there and nothing else under it is committed — and read-only, so the source
+# the deploy workflow drops beside it is unwritable either way.
 fs_permissions = [
   { access = "read", path = "./foundry.toml" },
   { access = "read", path = "./subgraph" },
