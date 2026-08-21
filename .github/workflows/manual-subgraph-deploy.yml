@@ -1,5 +1,13 @@
 name: Subgraph manual deploy
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      metadata-ref:
+        description: >-
+          rain.metadata ref to take the subgraph SOURCE from. The manifest,
+          schema and mappings are not in this repo; only networks.json is.
+        required: false
+        default: main
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -11,6 +19,18 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      # The subgraph is split on whether a file carries a deployment fact
+      # (rainlanguage/rain.metadata#149). This repo holds `networks.json` and
+      # nothing else under `subgraph/`; the manifest, schema, mappings and
+      # package lock are SOURCE and live in the library half. They are fetched
+      # rather than duplicated, so there is one copy of each and it is the one
+      # matchstick runs against.
+      - name: Checkout the subgraph source
+        uses: actions/checkout@v6
+        with:
+          repository: rainlanguage/rain.metadata
+          ref: ${{ inputs.metadata-ref }}
+          path: .subgraph-source
       - uses: nixbuild/nix-quick-install-action@v30
         with:
           nix_conf: |
@@ -22,8 +42,47 @@ jobs:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
           restore-prefixes-first-match: nix-${{ runner.os }}-
           gc-max-store-size-linux: 1G
-      - name: Install soldeer dependencies
-        run: nix develop github:rainlanguage/rainix#sol-shell -c forge soldeer install
+      # Merged INTO `subgraph/` rather than over it: this repo's own
+      # `networks.json` has to survive, and the library must not be shipping one
+      # of its own to shadow it. Both are asserted, because a silent shadow
+      # would deploy whatever table the library happened to carry.
+      - name: Assemble the subgraph
+        run: |
+          set -euo pipefail
+          if [ -e .subgraph-source/subgraph/networks.json ]; then
+            echo "::error::rain.metadata ships a networks.json; it would shadow this repo's deploy record"
+            exit 1
+          fi
+          cp -R .subgraph-source/subgraph/. subgraph/
+          test -f subgraph/networks.json
+          test -f subgraph/subgraph.yaml
+          source_sha="$(git -C .subgraph-source rev-parse HEAD)"
+          echo "subgraph source: rainlanguage/rain.metadata@${source_sha}"
+          echo "Subgraph source: [rain.metadata@\`${source_sha}\`](https://github.com/rainlanguage/rain.metadata/commit/${source_sha})" >> "$GITHUB_STEP_SUMMARY"
+      # The manifest reads its ABI out of `out/`, which is a forge build of the
+      # interface it arrives with as a soldeer dependency, so the dependencies
+      # have to be on disk and compiled before `graph build` can read anything.
+      - name: Build the ABI the manifest reads
+        run: |
+          nix develop github:rainlanguage/rainix#sol-shell -c forge soldeer install
+          nix develop github:rainlanguage/rainix#sol-shell -c forge build
+      # Fail here rather than part way through a five-network Goldsky loop: the
+      # manifest's ABI paths are a cross-repo coupling and this is the first
+      # place they can be resolved. Read out of the manifest with `yq` rather
+      # than grepped for: `file:` also names the schema and the mapping, and a
+      # grep that matched one of those would report success having checked a
+      # path that was never in question.
+      - name: Check the manifest ABIs resolve
+        run: |
+          nix develop --command bash -c '
+            set -euo pipefail
+            abis="$(yq -r ".dataSources[].mapping.abis[].file" subgraph/subgraph.yaml)"
+            test -n "$abis"
+            while read -r abi; do
+              echo "manifest ABI: $abi"
+              test -f "subgraph/$abi"
+            done <<< "$abis"
+          '
       - name: Deploy and capture URLs
         id: deploy
         run: |

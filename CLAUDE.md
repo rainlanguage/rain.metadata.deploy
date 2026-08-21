@@ -42,26 +42,35 @@ address or Goldsky coupling, so it stays with the library half. The metaboard
   `src/lib/LibMetaBoardReleased.sol`, `src/lib/LibReleasedSuites.sol`) — do not
   hand-edit; `script/Build.sol` regenerates them.
 
-## The subgraph (#2)
+## The subgraph: this repo holds ONE file (#2, recut by rain.metadata#149)
 
 - `subgraph/networks.json` is a deploy record in JSON — the per-network table of
   the address the subgraph indexes — which is why it is here rather than in the
-  library half.
+  library half. It is the WHOLE of this repo's share. The manifest, schema,
+  mappings and matchstick suite are subgraph SOURCE and stay in `rain.metadata`,
+  which also pins the manifest to the interface it indexes. `.gitignore` keeps
+  everything else under `subgraph/` uncommittable.
 - It names the **v1** `MetaBoard` (`0xfb8437Ae...`), deployed before this repo
   existed. This repo holds no record of v1 and is not meant to: that address is
   what the subgraph indexes today, NOT a historical pin to reconstruct or purge.
 - `test/src/subgraph/SubgraphDeployRecord.t.sol` is the wiring the move exists
-  for — manifest, table and matchstick fixture checked against
-  `LibMetaBoardReleased`, the candidate's `artifactPath` and
+  for — the network table checked against `LibMetaBoardReleased` and
   `LibRainDeploy.supportedNetworks()`. It is Solidity in the ordinary
   `rainix-sol` lane, so it needs no docker and no node.
 - Its release-coverage assertion is EMPTY-TRUE until the first `sol-v*` tag and
-  arms itself at that tag. `mutants.toml`'s `M11` is what shows it bites.
-- The manifest reads its ABI from `../out/MetaBoard.sol/MetaBoard.json` — this
-  repo's own concrete — so `subgraph-build` needs `forge soldeer install` first.
+  arms itself at that tag. `mutants.toml`'s `M04` is what shows it bites.
 - The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
   `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
   its mapping in that test in the same change, or it fails closed.
+- `Subgraph manual deploy` assembles the deploy: it checks out the subgraph
+  source from `rain.metadata` (`metadata-ref`, default `main`), merges it into
+  `subgraph/` beside this repo's `networks.json`, `forge build`s the ABI the
+  manifest reads, then runs `subgraph-deploy`. **Nothing else in this repo runs
+  a subgraph command** — there is no manifest here to run one against.
+- The Goldsky version is `<address>-<this repo's short commit>`, which does NOT
+  name the subgraph source. Two dispatches from one commit against different
+  `metadata-ref`s collide on version and `subgraph-deploy` skips the second as
+  already deployed. Bump this repo or take the source from `main`.
 
 ## Release / deploy shape
 
