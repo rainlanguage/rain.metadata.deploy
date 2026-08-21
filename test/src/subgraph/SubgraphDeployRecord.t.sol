@@ -68,8 +68,8 @@ struct SubgraphDataSource {
 ///   is empty and there is nothing to demand. That is the honest state of the
 ///   world and it is not dressed up as more. It arms itself: the first release
 ///   puts an address in the record, and from that moment the subgraph must name
-///   it on every network it indexes or this test is red. `mutants.toml`'s
-///   released-record mutant is what shows it bites rather than passes.
+///   it on every network it indexes or this test is red. A mutation that puts
+///   a release into the record shows it bites rather than passes.
 ///
 /// - Everything else here is live today and does real work: the table parses to
 ///   something, one address per datasource across networks, every indexed

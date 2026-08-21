@@ -56,8 +56,8 @@ half. Only the subgraph's deployment record is here — see below.
   address is what the subgraph indexes today, NOT a historical pin to
   reconstruct or purge.
 - `SubgraphDeployRecord.t.sol`'s release-coverage assertion is EMPTY-TRUE until
-  the first `sol-v*` tag and arms itself there. `mutants.toml`'s `M04` shows it
-  bites.
+  the first `sol-v*` tag and arms itself there. A mutation that puts a
+  release into the record shows it bites.
 - The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
   `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
   its mapping in that test in the same change, or it fails closed.
