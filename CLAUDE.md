@@ -10,11 +10,10 @@ rain.metadata.deploy is the **deploy half** of `rain.metadata`: the concrete
 `MetaBoard` (an `IMetaBoardV1_2` that is nothing but one delegation per entry
 point into `LibIMetaBoardV1_2`) plus its deployed address + codehash pins. The
 `IMeta*` **interfaces and the metaboard logic are NOT here** — they live in
-`rain.metadata` and arrive as the `rain-metadata` Soldeer dependency
-(`dependencies/rain-metadata-<version>/src/`). The rust crates are not here
-either: `crates/metaboard` is a Cynic client keyed by endpoint URL, with no
-address or Goldsky coupling, so it stays with the library half. The metaboard
-**subgraph** IS here — see below.
+`rain.metadata` and arrive as the `rain-metadata` Soldeer dependency. The rust
+crates are not here either: `crates/metaboard` is a Cynic client keyed by
+endpoint URL, with no address or Goldsky coupling, so it stays with the library
+half. Only the subgraph's deployment record is here — see below.
 
 ## Conventions an agent would get wrong
 
@@ -42,35 +41,29 @@ address or Goldsky coupling, so it stays with the library half. The metaboard
   `src/lib/LibMetaBoardReleased.sol`, `src/lib/LibReleasedSuites.sol`) — do not
   hand-edit; `script/Build.sol` regenerates them.
 
-## The subgraph: this repo holds ONE file (#2, recut by rain.metadata#149)
+## The subgraph: one file here (#2, recut by rain.metadata#149)
 
-- `subgraph/networks.json` is a deploy record in JSON — the per-network table of
-  the address the subgraph indexes — which is why it is here rather than in the
-  library half. It is the WHOLE of this repo's share. The manifest, schema,
-  mappings and matchstick suite are subgraph SOURCE and stay in `rain.metadata`,
-  which also pins the manifest to the interface it indexes. `.gitignore` keeps
-  everything else under `subgraph/` uncommittable.
-- It names the **v1** `MetaBoard` (`0xfb8437Ae...`), deployed before this repo
-  existed. This repo holds no record of v1 and is not meant to: that address is
-  what the subgraph indexes today, NOT a historical pin to reconstruct or purge.
-- `test/src/subgraph/SubgraphDeployRecord.t.sol` is the wiring the move exists
-  for — the network table checked against `LibMetaBoardReleased` and
-  `LibRainDeploy.supportedNetworks()`. It is Solidity in the ordinary
-  `rainix-sol` lane, so it needs no docker and no node.
-- Its release-coverage assertion is EMPTY-TRUE until the first `sol-v*` tag and
-  arms itself at that tag. `mutants.toml`'s `M04` is what shows it bites.
+- `subgraph/networks.json` (per-network address + start block) is a deploy
+  record and the WHOLE of this repo's share. Manifest, schema, mappings and
+  matchstick suite are SOURCE and stay in `rain.metadata`, which pins the
+  manifest to the interface it indexes. `Subgraph manual deploy` fetches that
+  source (`metadata-ref`) and merges it in beside the table, and `graph build`
+  rewrites the manifest in place — hence `.gitignore` keeps everything under
+  `subgraph/` but the table uncommittable. Nothing else here runs a subgraph
+  command.
+- The table names the **v1** `MetaBoard` (`0xfb8437Ae...`), deployed before this
+  repo existed. This repo holds no record of v1 and is not meant to: that
+  address is what the subgraph indexes today, NOT a historical pin to
+  reconstruct or purge.
+- `SubgraphDeployRecord.t.sol`'s release-coverage assertion is EMPTY-TRUE until
+  the first `sol-v*` tag and arms itself there. `mutants.toml`'s `M04` shows it
+  bites.
 - The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
   `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
   its mapping in that test in the same change, or it fails closed.
-- `Subgraph manual deploy` assembles the deploy: it checks out the subgraph
-  source from `rain.metadata` (`metadata-ref`, default `main`), merges it into
-  `subgraph/` beside this repo's `networks.json`, `forge build`s the ABI the
-  manifest reads, then runs `subgraph-deploy`. **Nothing else in this repo runs
-  a subgraph command** — there is no manifest here to run one against.
-- The Goldsky version is `<address>-<this repo's short commit>`, which does NOT
-  name the subgraph source. Two dispatches from one commit against different
-  `metadata-ref`s collide on version and `subgraph-deploy` skips the second as
-  already deployed. Bump this repo or take the source from `main`.
+- The Goldsky version is `<address>-<short commit of THIS repo>`, not of the
+  source, so two dispatches from one commit against different `metadata-ref`s
+  collide and the second is skipped as already deployed.
 
 ## Release / deploy shape
 
