@@ -1,0 +1,31 @@
+[package]
+name = "metaboard-subgraph-report"
+version = "0.1.0"
+description = "Enumerate deployed metaboard subgraphs on Goldsky and report supersession reaping candidates."
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+# httpmock runs a local tokio/hyper server (-> mio, which has no wasm target),
+# so it is gated to non-wasm along with the tests that use it.
+[target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
+httpmock = "0.7.0"
+
+[[bin]]
+name = "metaboard-subgraph-report"
+path = "src/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
+[lints.clippy]
+all = "warn"

@@ -1,0 +1,178 @@
+# Mutation probe config for the metaboard-subgraph-report crate.
+#
+# Every mutant below breaks one load-bearing decision in the classifier, the
+# listing reduction, or the report rendering. The bar is that the suite must
+# FAIL for each one: a mutant that survives is a behaviour no test pins down.
+#
+# Run with:
+#   nix run github:rainlanguage/adversarial-mutation-test#mutation-probe -- mutants.toml
+
+[suite]
+root = "."
+command = ["sh", "check.sh"]
+proof = '(\d+) passed; (\d+) failed'
+fail-pattern = 'test (\S+) \.\.\. FAILED'
+timeout-secs = 1800
+
+# ---------- the candidacy decision ----------
+
+[[mutants]]
+name = "M01 age window boundary flipped to exclusive"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "if age < policy.min_age_days {"
+replacement = "if age <= policy.min_age_days {"
+
+[[mutants]]
+name = "M02 newest comparison inverted, oldest retained instead"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "                    if created > *c {"
+replacement = "                    if created < *c {"
+
+[[mutants]]
+name = "M03 newest tie no longer retained"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "if newest.get(e.name.as_str()) == Some(&created) {"
+replacement = "if newest.get(e.name.as_str()) > Some(&created) {"
+
+[[mutants]]
+name = "M04 unknown age treated as reapable rather than retained"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "                        None => Verdict::Retained(Retained::UnknownAge),"
+replacement = "                        None => Verdict::Candidate { age_days: 0 },"
+
+[[mutants]]
+name = "M05 pin check ignores the name and matches the bare version"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "let verdict = if policy.pinned.contains(&e.name_and_version()) {"
+replacement = "let verdict = if policy.pinned.contains(&e.version) {"
+
+# ---------- tag protection ----------
+
+[[mutants]]
+name = "M06 tag protection ignores which name the tag sits under"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "} else if tag_targets.contains(&(e.name.as_str(), e.version.as_str())) {"
+replacement = "} else if tag_targets.iter().any(|(_, v)| *v == e.version.as_str()) {"
+
+[[mutants]]
+name = "M07 any tag on a name protects every version under it"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "} else if tag_targets.contains(&(e.name.as_str(), e.version.as_str())) {"
+replacement = "} else if tag_targets.iter().any(|(n, _)| *n == e.name.as_str()) {"
+
+[[mutants]]
+name = "M08 alias rows fold into the newest calculation"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "for e in entries.iter().filter(|e| !e.is_tag_alias()) {"
+replacement = "for e in entries.iter() {"
+
+# ---------- age arithmetic ----------
+
+[[mutants]]
+name = "M09 a future timestamp yields a negative age"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "    if elapsed < 0 { 0 } else { elapsed / MS_PER_DAY }"
+replacement = "    elapsed / MS_PER_DAY"
+
+[[mutants]]
+name = "M10 age rounds up instead of flooring"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "    if elapsed < 0 { 0 } else { elapsed / MS_PER_DAY }"
+replacement = "    if elapsed < 0 { 0 } else { (elapsed + MS_PER_DAY - 1) / MS_PER_DAY }"
+
+# ---------- name filtering ----------
+
+[[mutants]]
+name = "M11 prefix filter loosened to a substring match"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = ".filter(|e| prefixes.is_empty() || prefixes.iter().any(|p| e.name.starts_with(p)))"
+replacement = ".filter(|e| prefixes.is_empty() || prefixes.iter().any(|p| e.name.contains(p.as_str())))"
+
+[[mutants]]
+name = "M12 prefix filter requires every prefix to match"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = ".filter(|e| prefixes.is_empty() || prefixes.iter().any(|p| e.name.starts_with(p)))"
+replacement = ".filter(|e| prefixes.is_empty() || prefixes.iter().all(|p| e.name.starts_with(p)))"
+
+# ---------- listing reduction ----------
+
+[[mutants]]
+name = "M13 a tagged row is reduced to a deployment and becomes reapable"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = """        let kind = match self.tag {
+            Some(tag) => Kind::TagAlias {
+                target_version: tag.target_version,
+            },
+            None => Kind::Deployment,
+        };"""
+replacement = "        let kind = Kind::Deployment;"
+
+[[mutants]]
+name = "M14 creation time takes the oldest deployment record"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = "let created_at_ms = self.deployments.iter().filter_map(|d| d.created_at).max();"
+replacement = "let created_at_ms = self.deployments.iter().filter_map(|d| d.created_at).min();"
+
+[[mutants]]
+name = "M15 paused detection matches any status"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = "paused: self.status.as_deref() == Some(STATUS_PAUSED),"
+replacement = "paused: self.status.is_some(),"
+
+# ---------- transport ----------
+
+[[mutants]]
+name = "M16 a non-2xx response is parsed as a successful listing"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = "        if !status.is_success() {"
+replacement = "        if false {"
+
+[[mutants]]
+name = "M17 a malformed body degrades to an empty listing"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = "let listing: ListResponse = serde_json::from_str(&body).map_err(GoldskyError::Decode)?;"
+replacement = "let listing: ListResponse = serde_json::from_str(&body).unwrap_or(ListResponse { data: vec![] });"
+
+[[mutants]]
+name = "M18 the bearer token is not sent"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = "            .bearer_auth(&self.token)\n"
+replacement = ""
+
+[[mutants]]
+name = "M19 an empty token is accepted and a request made anyway"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = "        if token.is_empty() {"
+replacement = "        if false {"
+
+[[mutants]]
+name = "M20 a trailing slash on the host is left in place"
+file = "crates/metaboard-subgraph-report/src/goldsky.rs"
+target = "api_host: api_host.trim_end_matches('/').to_string(),"
+replacement = "api_host: api_host.to_string(),"
+
+# ---------- reporting ----------
+
+[[mutants]]
+name = "M21 the report claims usage metrics are available"
+file = "crates/metaboard-subgraph-report/src/report.rs"
+target = '"usage_metrics_available": false,'
+replacement = '"usage_metrics_available": true,'
+
+[[mutants]]
+name = "M22 retained rows are listed as candidates"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "        self.deployments.iter().filter(|a| a.verdict.is_candidate())"
+replacement = "        self.deployments.iter().filter(|_| true)"
+
+[[mutants]]
+name = "M23 the candidate reason code claims measured disuse"
+file = "crates/metaboard-subgraph-report/src/report.rs"
+target = 'Verdict::Candidate { .. } => "superseded",'
+replacement = 'Verdict::Candidate { .. } => "unused",'
+
+[[mutants]]
+name = "M24 a dangling tag reads as targeted"
+file = "crates/metaboard-subgraph-report/src/classify.rs"
+target = "        self.target_version.is_none()"
+replacement = "        self.target_version.is_some()"
