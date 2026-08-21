@@ -36,7 +36,7 @@ See rainlanguage/rain.metadata#134 for the split rationale.
 and reports which deployed versions have been superseded, so unused deploys can
 be found and retired. Run it with a Goldsky token in `GOLDSKY_TOKEN`:
 
-```
+```bash
 GOLDSKY_TOKEN=… nix run .#metaboard-subgraph-report
 GOLDSKY_TOKEN=… nix run .#metaboard-subgraph-report -- --format json
 GOLDSKY_TOKEN=… nix run .#metaboard-subgraph-report -- --format candidates
