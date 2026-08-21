@@ -9,7 +9,6 @@ path = [
   ".gitignore",
   "Cargo.lock",
   "Cargo.toml",
-  "check.sh",
   "crates/**/",
   "CLAUDE.md",
   "README.md",
