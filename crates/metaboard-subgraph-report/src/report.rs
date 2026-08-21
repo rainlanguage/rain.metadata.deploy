@@ -200,12 +200,6 @@ pub fn render_table(
     out
 }
 
-/// Count of alias rows pointing at nothing, surfaced because a dangling tag is
-/// a consumer-facing breakage: anyone querying the tag URL gets no subgraph.
-pub fn dangling_tag_count(report: &Report) -> usize {
-    report.dangling_tags().count()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -534,18 +528,5 @@ mod tests {
     fn the_table_never_emits_a_runnable_delete_command() {
         let table = render_table(&mixed_report(), &Policy::default(), &prefixes(), NOW);
         assert!(!table.contains("subgraph delete"));
-    }
-
-    // ---------- dangling count ----------
-
-    #[test]
-    fn dangling_tags_are_counted_and_targeted_ones_are_not() {
-        let entries = vec![
-            alias("metaboard-base", "a", None),
-            alias("metaboard-base", "b", Some("v1")),
-            alias("metaboard-flare", "c", None),
-        ];
-        let report = classify(&entries, &Policy::default(), NOW);
-        assert_eq!(dangling_tag_count(&report), 2);
     }
 }
