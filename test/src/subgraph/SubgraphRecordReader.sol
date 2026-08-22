@@ -119,6 +119,12 @@ abstract contract SubgraphRecordReader is Test {
         if (key == keccak256(bytes("flare"))) {
             return LibRainDeploy.FLARE;
         }
+        if (key == keccak256(bytes("hyperevm"))) {
+            return LibRainDeploy.HYPEREVM;
+        }
+        if (key == keccak256(bytes("mainnet"))) {
+            return LibRainDeploy.ETHEREUM;
+        }
         revert UnmappedSubgraphNetwork(graphNetwork);
     }
 }

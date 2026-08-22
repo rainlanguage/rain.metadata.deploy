@@ -10,7 +10,7 @@ import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.s
 /// `startBlock - 1` finds none. Together the two reads pin `startBlock` as THE
 /// deployment block — the one field of the table `SubgraphDeployRecordTest`
 /// cannot see past, because that suite compares the file to this repo's
-/// records and no record here says when the v1 `MetaBoard` reached each chain.
+/// records and no record here says when a released `MetaBoard` reached each chain.
 /// All it can demand of `startBlock` is that it is not genesis.
 ///
 /// The error that matters is the too-late direction. The Graph indexes forward
@@ -22,7 +22,7 @@ import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.s
 ///
 /// Two forks per datasource, on the datasource's own network, resolved through
 /// the same declared mapping the record suite uses. The historical reads need
-/// archive state — the v1 start blocks are years old — which is CI's
+/// archive state — a start block only recedes as the chain grows — which is CI's
 /// rpc-preflight's job: it binds each `[rpc_endpoints]` alias to an endpoint
 /// that answered archive probes at or below the org's deepest pins for that
 /// network, and every block this table names is at or above those probes.

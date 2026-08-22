@@ -51,13 +51,13 @@ deploys, which is not metadata logic.
   source (`metadata-ref`) and merges it in beside the table, and `graph build`
   rewrites the manifest in place — hence `.gitignore` ignores all of `subgraph/`
   except the table. Nothing else here runs a subgraph command.
-- The table names the **v1** `MetaBoard` (`0xfb8437Ae...`), deployed before this
-  repo existed. This repo pins no v1 bytecode and is not meant to: that address
-  is what the subgraph indexes today, NOT a historical pin to reconstruct or
-  purge.
-- `SubgraphDeployRecord.t.sol`'s release-coverage assertion is EMPTY-TRUE until
-  the first `sol-v*` tag and arms itself there. A mutation that puts a release
-  into the record shows it bites.
+- The table names the **0.1.0** `MetaBoard` (`0x8fD50fF9...`) — this repo's own
+  frozen release — on all seven deploy networks, each `startBlock` the chain's
+  verified deploy block (#4). The v1 board (`0xfb8437Ae...`) survives here only
+  in git history.
+- `SubgraphDeployRecord.t.sol`'s release-coverage assertion armed at
+  `sol-v0.1.0`: every frozen release must be indexed on every indexed network,
+  or the suite is red.
 - The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
   `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
   its mapping in that test in the same change, or it fails closed.

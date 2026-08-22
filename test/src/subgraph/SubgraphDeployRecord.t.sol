@@ -37,28 +37,26 @@ import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.s
 /// What each assertion is worth TODAY:
 ///
 /// - Released deploys are indexed (`testEveryReleasedDeployIsIndexedOnEveryNetwork`).
-///   This is the assertion #2 is about, and it is EMPTY-TRUE right now: this
-///   repo has cut no `sol-v*` tag, so `LibMetaBoardReleased.releasedSuites()`
-///   is empty and there is nothing to demand. That is the honest state of the
-///   world and it is not dressed up as more. It arms itself: the first release
-///   puts an address in the record, and from that moment the subgraph must name
-///   it on every network it indexes or this test is red. A mutation that puts
-///   a release into the record shows it bites rather than passes.
+///   This is the assertion #2 is about, and it is LIVE: `sol-v0.1.0` froze the
+///   `MetaBoard` this repo broadcast to all seven supported networks, so
+///   `LibMetaBoardReleased.releasedSuites()` holds its address and the table
+///   must name it on every network it indexes or this test is red. It was
+///   EMPTY-TRUE from the suite's landing until that first release armed it.
 ///
-/// - Everything else here is live today and does real work: the table parses to
+/// - Everything else here is live too and does real work: the table parses to
 ///   something, one address per datasource across networks, every indexed
 ///   network a network this repo broadcasts to, no datasource starting at
 ///   genesis.
 ///
-/// What is deliberately NOT asserted: that `networks.json`'s address is one
-/// this repo has a record of. It is not — `0xfb8437Ae...` is the v1 `MetaBoard`,
-/// deployed before this repo existed, and #2 rules that it stays because it is
-/// what the subgraph indexes today, not a historical record to purge. Nor is
-/// the candidate's address refused, because the deploy is dispatched BEFORE the
-/// release is tagged, so there is a legitimate window in which `networks.json`
-/// names a freshly broadcast candidate that no frozen snapshot covers yet. An
-/// assertion that failed during that window would be an assertion the release
-/// process has to be worked around.
+/// What is deliberately NOT asserted: that every address in `networks.json` is
+/// one this repo has a record of. Today the table names only the released
+/// `0.1.0` address, but the deploy is dispatched BEFORE the release is tagged,
+/// so there is a legitimate window in which `networks.json` names a freshly
+/// broadcast candidate that no frozen snapshot covers yet. An assertion that
+/// failed during that window would be an assertion the release process has to
+/// be worked around. (The v1 `MetaBoard` the table named before the flip is
+/// gone from this repo outside git history; rainlanguage/rain.metadata.deploy#4
+/// records the flip.)
 contract SubgraphDeployRecordTest is SubgraphRecordReader {
     /// `networks.json` MUST describe at least one datasource.
     ///

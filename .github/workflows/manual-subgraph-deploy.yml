@@ -4,8 +4,7 @@ on:
     inputs:
       metadata-ref:
         description: >-
-          rain.metadata ref to take the subgraph SOURCE from. The manifest,
-          schema and mappings are not in this repo; only networks.json is.
+          rain.metadata ref to take the subgraph SOURCE from. The manifest, schema and mappings are not in this repo; only networks.json is.
         required: false
         default: main
 # Read-only, stated rather than left to the repo default. This job fetches and
@@ -16,7 +15,7 @@ permissions:
   contents: read
 # One deploy at a time. `GOLDSKY_SUBGRAPH_NAME` is a single name, so two
 # dispatches publish over each other. Never cancelled: a half-finished
-# five-network loop leaves Goldsky holding some networks from one run and some
+# seven-network loop leaves Goldsky holding some networks from one run and some
 # from the other, which is worse than waiting.
 concurrency:
   group: subgraph-manual-deploy
@@ -84,7 +83,7 @@ jobs:
         run: |
           nix develop github:rainlanguage/rainix#sol-shell -c forge soldeer install
           nix develop github:rainlanguage/rainix#sol-shell -c forge build
-      # Fail here rather than part way through a five-network Goldsky loop: the
+      # Fail here rather than part way through a seven-network Goldsky loop: the
       # manifest's ABI paths are a cross-repo coupling and this is the first
       # place they can be resolved. Read out of the manifest with `yq` rather
       # than grepped for: `file:` also names the schema and the mapping, and a
