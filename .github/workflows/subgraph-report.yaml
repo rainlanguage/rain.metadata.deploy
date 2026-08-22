@@ -17,14 +17,6 @@ on:
           A superseded version must be at least this many days old to be listed as a reaping candidate.
         required: false
         default: "30"
-  # Weekly as well as on demand, so the current Goldsky state sits on the
-  # Actions page without anyone asking for it. Deploys are human-dispatched
-  # and the candidate age window is 30 days, so the state moves slowly; a
-  # weekly listing GET keeps the report fresh at negligible cost. GitHub
-  # suspends the schedule after 60 days of repo inactivity; the dispatch
-  # trigger always remains.
-  schedule:
-    - cron: "27 6 * * 1"
 # Read-only, stated rather than left to the repo default: nothing here needs
 # to write anything back, and the build step compiles third-party crates'
 # build scripts, which is code this repo did not review.
@@ -62,8 +54,8 @@ jobs:
           # The org's CI secret, surfaced under the name the binary reads.
           GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
           # Dispatch inputs arrive via env rather than interpolated into the
-          # script text, and are empty on scheduled runs, so the dispatch
-          # defaults are restated as shell fallbacks below.
+          # script text. A field blanked in the dispatch form arrives empty, so
+          # the CLI defaults are restated as shell fallbacks below.
           NAME_PREFIXES: ${{ inputs.name-prefixes }}
           MIN_AGE_DAYS: ${{ inputs.min-age-days }}
         run: |

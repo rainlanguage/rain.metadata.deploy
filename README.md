@@ -42,10 +42,10 @@ GOLDSKY_TOKEN=… nix run .#metaboard-subgraph-report -- --format json
 GOLDSKY_TOKEN=… nix run .#metaboard-subgraph-report -- --format candidates
 ```
 
-CI runs the same report without a local token: the `Subgraph report` workflow
-(`workflow_dispatch`, plus a weekly Monday cron so the answer exists without
-anyone asking) runs the binary against the org's Goldsky token and prints the
-table into the run's step summary, readable straight from the Actions run page.
+CI runs the same report without a local token: dispatch the `Subgraph
+report` workflow whenever the answer is wanted and it runs the binary
+against the org's Goldsky token, printing the table into the run's step
+summary, readable straight from the Actions run page.
 
 **It never deletes anything.** The client can issue exactly one request — the
 listing `GET` — and there is no delete, pause or mutate path in the crate at
