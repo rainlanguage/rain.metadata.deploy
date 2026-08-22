@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphDeployRecord.t.sol";
+import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.sol";
 
 /// @title SubgraphStartBlockTest
 /// @notice `startBlock` checked against the chain itself: for every datasource
