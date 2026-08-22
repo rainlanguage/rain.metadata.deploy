@@ -11,9 +11,9 @@ rain.metadata.deploy is the **deploy half** of `rain.metadata`: the concrete
 point into `LibIMetaBoardV1_2`) plus its deployed address + codehash pins. The
 `IMeta*` **interfaces and the metaboard logic are NOT here** — they live in
 `rain.metadata` and arrive as the `rain-metadata` Soldeer dependency. The
-subgraph SOURCE and the metadata rust crates stay in `rain.metadata` too Here:
-the subgraph's deployment record — see below — and one crate reporting on
-Goldsky deploys, which is not metadata logic.
+subgraph SOURCE and the metadata rust crates stay in `rain.metadata`. Here: the
+subgraph's deployment record — see below — and one crate reporting on Goldsky
+deploys, which is not metadata logic.
 
 ## Conventions an agent would get wrong
 
