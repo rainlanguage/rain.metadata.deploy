@@ -1,0 +1,44 @@
+{
+  "matic": {
+    "metaboard0": {
+      "address": "0x8fD50fF9Db9835ba1B61394752A26F53D721D2a1",
+      "startBlock": 92426181
+    }
+  },
+  "arbitrum-one": {
+    "metaboard0": {
+      "address": "0x8fD50fF9Db9835ba1B61394752A26F53D721D2a1",
+      "startBlock": 496974800
+    }
+  },
+  "base": {
+    "metaboard0": {
+      "address": "0x8fD50fF9Db9835ba1B61394752A26F53D721D2a1",
+      "startBlock": 50277465
+    }
+  },
+  "base-sepolia": {
+    "metaboard0": {
+      "address": "0x8fD50fF9Db9835ba1B61394752A26F53D721D2a1",
+      "startBlock": 45787995
+    }
+  },
+  "flare": {
+    "metaboard0": {
+      "address": "0x8fD50fF9Db9835ba1B61394752A26F53D721D2a1",
+      "startBlock": 67943188
+    }
+  },
+  "hyperevm": {
+    "metaboard0": {
+      "address": "0x8fD50fF9Db9835ba1B61394752A26F53D721D2a1",
+      "startBlock": 43806327
+    }
+  },
+  "mainnet": {
+    "metaboard0": {
+      "address": "0x8fD50fF9Db9835ba1B61394752A26F53D721D2a1",
+      "startBlock": 25805918
+    }
+  }
+}

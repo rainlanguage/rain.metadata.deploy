@@ -10,10 +10,10 @@ rain.metadata.deploy is the **deploy half** of `rain.metadata`: the concrete
 `MetaBoard` (an `IMetaBoardV1_2` that is nothing but one delegation per entry
 point into `LibIMetaBoardV1_2`) plus its deployed address + codehash pins. The
 `IMeta*` **interfaces and the metaboard logic are NOT here** — they live in
-`rain.metadata` and arrive as the `rain-metadata` Soldeer dependency
-(`dependencies/rain-metadata-<version>/src/`). The metaboard subgraph is not
-here either; it stays in `rain.metadata`, as do the metadata rust crates. The
-one crate here reports on Goldsky deploys, and is not metadata logic.
+`rain.metadata` and arrive as the `rain-metadata` Soldeer dependency. The
+subgraph SOURCE and the metadata rust crates stay in `rain.metadata`. Here: the
+subgraph's deployment record — see below — and one crate reporting on Goldsky
+deploys, which is not metadata logic.
 
 ## Conventions an agent would get wrong
 
@@ -41,6 +41,29 @@ one crate here reports on Goldsky deploys, and is not metadata logic.
 - Generated files (`src/generated/`, `src/lib/LibMetaBoardDeploy.sol`,
   `src/lib/LibMetaBoardReleased.sol`, `src/lib/LibReleasedSuites.sol`) — do not
   hand-edit; `script/Build.sol` regenerates them.
+
+## The subgraph: one file here (#2, recut by rain.metadata#149)
+
+- `subgraph/networks.json` (per-network address + start block) is a deploy
+  record and the WHOLE of this repo's share. Manifest, schema, mappings and
+  matchstick suite are SOURCE and stay in `rain.metadata`, which pins the
+  manifest to the interface it indexes. `Subgraph manual deploy` fetches that
+  source (`metadata-ref`) and merges it in beside the table, and `graph build`
+  rewrites the manifest in place — hence `.gitignore` ignores all of `subgraph/`
+  except the table. Nothing else here runs a subgraph command.
+- The table names the **0.1.0** `MetaBoard` (`0x8fD50fF9...`) — this repo's own
+  frozen release — on all seven deploy networks, each `startBlock` the chain's
+  verified deploy block (#4). The v1 board (`0xfb8437Ae...`) survives here only
+  in git history.
+- `SubgraphDeployRecord.t.sol`'s release-coverage assertion armed at
+  `sol-v0.1.0`: every frozen release must be indexed on every indexed network,
+  or the suite is red.
+- The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
+  `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
+  its mapping in that test in the same change, or it fails closed.
+- The Goldsky version is `<address>-<short commit of THIS repo>`, not of the
+  source, so two dispatches from one commit against different `metadata-ref`s
+  collide and the second is skipped as already deployed (rainix#354).
 
 ## Release / deploy shape
 

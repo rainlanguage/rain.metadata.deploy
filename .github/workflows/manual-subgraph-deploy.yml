@@ -1,0 +1,154 @@
+name: Subgraph manual deploy
+on:
+  workflow_dispatch:
+    inputs:
+      metadata-ref:
+        description: >-
+          rain.metadata ref to take the subgraph SOURCE from. The manifest, schema and mappings are not in this repo; only networks.json is.
+        required: false
+        default: main
+# Read-only, stated rather than left to the repo default. This job fetches and
+# then RUNS another repo's `package.json` install scripts, so the ambient
+# `GITHUB_TOKEN` is reachable from code this repo did not review; nothing here
+# needs to write anything back.
+permissions:
+  contents: read
+# One deploy at a time. `GOLDSKY_SUBGRAPH_NAME` is a single name, so two
+# dispatches publish over each other. Never cancelled: a half-finished
+# seven-network loop leaves Goldsky holding some networks from one run and some
+# from the other, which is worse than waiting.
+concurrency:
+  group: subgraph-manual-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
+      GOLDSKY_SUBGRAPH_NAME: metaboard
+    steps:
+      # `persist-credentials: false` on both checkouts: the fetched subgraph
+      # source's install scripts run in this job, and a git config holding the
+      # token is one `git config --get` away from them. Nothing here pushes.
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The subgraph is split on whether a file carries a deployment fact
+      # (rainlanguage/rain.metadata#149). This repo holds `networks.json` and
+      # nothing else under `subgraph/`; the manifest, schema, mappings and
+      # package lock are SOURCE and live in the library half. They are fetched
+      # rather than duplicated, so there is one copy of each and it is the one
+      # matchstick runs against.
+      - name: Checkout the subgraph source
+        uses: actions/checkout@v6
+        with:
+          repository: rainlanguage/rain.metadata
+          ref: ${{ inputs.metadata-ref }}
+          path: .subgraph-source
+          persist-credentials: false
+      - uses: nixbuild/nix-quick-install-action@v30
+        with:
+          nix_conf: |
+            keep-env-derivations = true
+            keep-outputs = true
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 1G
+      # Merged INTO `subgraph/` rather than over it: this repo's own
+      # `networks.json` has to survive, and the library must not be shipping one
+      # of its own to shadow it. Both are asserted, because a silent shadow
+      # would deploy whatever table the library happened to carry.
+      - name: Assemble the subgraph
+        run: |
+          set -euo pipefail
+          if [ -e .subgraph-source/subgraph/networks.json ]; then
+            echo "::error::rain.metadata ships a networks.json; it would shadow this repo's deploy record"
+            exit 1
+          fi
+          cp -R .subgraph-source/subgraph/. subgraph/
+          test -f subgraph/networks.json
+          test -f subgraph/subgraph.yaml
+          source_sha="$(git -C .subgraph-source rev-parse HEAD)"
+          echo "subgraph source: rainlanguage/rain.metadata@${source_sha}"
+          echo "Subgraph source: [rain.metadata@\`${source_sha}\`](https://github.com/rainlanguage/rain.metadata/commit/${source_sha})" >> "$GITHUB_STEP_SUMMARY"
+      # The manifest reads its ABI out of `out/`, which is a forge build of the
+      # interface it arrives with as a soldeer dependency, so the dependencies
+      # have to be on disk and compiled before `graph build` can read anything.
+      - name: Build the ABI the manifest reads
+        run: |
+          nix develop github:rainlanguage/rainix#sol-shell -c forge soldeer install
+          nix develop github:rainlanguage/rainix#sol-shell -c forge build
+      # Fail here rather than part way through a seven-network Goldsky loop: the
+      # manifest's ABI paths are a cross-repo coupling and this is the first
+      # place they can be resolved. Read out of the manifest with `yq` rather
+      # than grepped for: `file:` also names the schema and the mapping, and a
+      # grep that matched one of those would report success having checked a
+      # path that was never in question.
+      - name: Check the manifest ABIs resolve
+        run: |
+          nix develop --command bash -c '
+            set -euo pipefail
+            abis="$(yq -r ".dataSources[].mapping.abis[].file" subgraph/subgraph.yaml)"
+            test -n "$abis"
+            while read -r abi; do
+              echo "manifest ABI: $abi"
+              test -f "subgraph/$abi"
+            done <<< "$abis"
+          '
+      # `subgraph-deploy` runs `npm ci` and then `graph build --network`, and
+      # `graph build` does NOT codegen. It compiles `src/metaBoard.ts`, which
+      # imports `../generated/metaboard0/MetaBoard` and `../generated/schema` —
+      # generated files, gitignored in the library half, so they never arrive
+      # with the fetched source. Without this step the AssemblyScript compile
+      # fails on two unresolved imports for every network in the loop.
+      #
+      # `npm ci` here is the same install `subgraph-deploy` repeats. It removes
+      # `node_modules` and not `generated/`, so the types survive into it.
+      - name: Generate the subgraph types
+        run: nix develop --command bash -c 'cd subgraph && npm ci && graph codegen'
+      - name: Deploy and capture URLs
+        id: deploy
+        run: |
+          set -o pipefail
+          nix develop --command subgraph-deploy 2>&1 | tee deploy.log
+          echo
+          # `subgraph-deploy` skips a network whose version Goldsky already
+          # holds, and prints no URL for it. A re-dispatch that skips every
+          # network is a SUCCESSFUL no-op matching nothing, and `grep` answers
+          # no-match with exit 1 — which `pipefail` plus the runner's `-e` would
+          # read as a failed deploy. So exit 1 is folded into an empty list, and
+          # only exit 1: anything above it is `grep` failing rather than not
+          # matching, and still fails the step.
+          matched=0
+          grep -oE 'https://api\.goldsky\.com/api/public/[^[:space:]]+/gn' deploy.log > matched_urls.txt || matched=$?
+          if [ "$matched" -gt 1 ]; then
+            exit "$matched"
+          fi
+          sort -u matched_urls.txt > deployed_urls.txt
+          echo "::group::Deployed Goldsky URLs"
+          cat deployed_urls.txt
+          echo "::endgroup::"
+          # Into the run summary as well as the log: `deployed_urls.txt` lives
+          # in the runner workspace and is gone with it, and the log is where
+          # nobody looks for the one fact a deploy produces. The summary already
+          # names the source commit these URLs were built from, so the two sit
+          # together and the pair survives the runner.
+          #
+          # The empty case is spelled rather than left as an empty list: a
+          # summary reading "Deployed:" and then nothing looks like a broken
+          # step rather than the no-op it is.
+          {
+            echo
+            if [ -s deployed_urls.txt ]; then
+              echo "Deployed:"
+              echo
+              sed 's|^|- |' deployed_urls.txt
+            else
+              echo "Deployed: nothing. Every network already held this version."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

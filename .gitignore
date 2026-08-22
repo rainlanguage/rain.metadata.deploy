@@ -6,4 +6,15 @@ result
 dependencies
 remappings.txt
 .pre-commit-config.yaml
+<<<<<<< HEAD
+
+# `subgraph/networks.json` is the only file this repo owns under `subgraph/`.
+# The `Subgraph manual deploy` workflow fetches the SOURCE from rain.metadata
+# and merges it in here, then `graph build` writes `build/`, `generated/` and
+# `node_modules/` beside it and rewrites the manifest in place. All of that is
+# transient and none of it is this repo's to commit.
+/subgraph/*
+!/subgraph/networks.json
+=======
 target
+>>>>>>> origin/main
