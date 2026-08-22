@@ -32,59 +32,15 @@ struct SubgraphDataSource {
     uint256 startBlock;
 }
 
-/// @title SubgraphDeployRecordTest
-/// @notice `subgraph/networks.json` checked against this repo's deploy records
-/// — the check rainlanguage/rain.metadata#134 lost and #2 moved the table here
-/// to get back.
-///
-/// Before the split, `networks.json`'s address sat in the same tree as
-/// `METABOARD_DEPLOYED_ADDRESS` and could be compared to it. The split took the
-/// constant away and left `networks.json` as the only place in the org naming a
-/// live `MetaBoard`, with nothing to check it against. Both halves are here
-/// again, so the comparison is a test rather than a convention.
-///
-/// `networks.json` is ALL this repo holds under `subgraph/`
-/// (rainlanguage/rain.metadata#149): the manifest, schema, mappings and
-/// matchstick suite are subgraph SOURCE and stay in `rain.metadata`, which is
-/// also where the manifest is pinned to the interface it indexes. So every
-/// assertion below reads the network table and this repo's own records, and
-/// nothing here reads a manifest — there is not one in this tree to read, and
-/// one fetched at deploy time is not a thing a per-push test can hold.
-///
-/// This is a Solidity test, in the existing `rainix-sol` lane, deliberately.
-/// The deploy record IS Solidity — `LibMetaBoardReleased` and
-/// `LibRainDeploy.supportedNetworks()` are the things being compared against —
-/// so a check written anywhere else would have to re-spell the record in
-/// another language and could then disagree with it. It also means the check
-/// needs no docker, no node and no matchstick: the lane that already gates
-/// every push runs it.
-///
-/// What each assertion is worth TODAY:
-///
-/// - Released deploys are indexed (`testEveryReleasedDeployIsIndexedOnEveryNetwork`).
-///   This is the assertion #2 is about, and it is EMPTY-TRUE right now: this
-///   repo has cut no `sol-v*` tag, so `LibMetaBoardReleased.releasedSuites()`
-///   is empty and there is nothing to demand. That is the honest state of the
-///   world and it is not dressed up as more. It arms itself: the first release
-///   puts an address in the record, and from that moment the subgraph must name
-///   it on every network it indexes or this test is red. A mutation that puts
-///   a release into the record shows it bites rather than passes.
-///
-/// - Everything else here is live today and does real work: the table parses to
-///   something, one address per datasource across networks, every indexed
-///   network a network this repo broadcasts to, no datasource starting at
-///   genesis.
-///
-/// What is deliberately NOT asserted: that `networks.json`'s address is one
-/// this repo has a record of. It is not — `0xfb8437Ae...` is the v1 `MetaBoard`,
-/// deployed before this repo existed, and #2 rules that it stays because it is
-/// what the subgraph indexes today, not a historical record to purge. Nor is
-/// the candidate's address refused, because the deploy is dispatched BEFORE the
-/// release is tagged, so there is a legitimate window in which `networks.json`
-/// names a freshly broadcast candidate that no frozen snapshot covers yet. An
-/// assertion that failed during that window would be an assertion the release
-/// process has to be worked around.
-contract SubgraphDeployRecordTest is Test {
+/// @title SubgraphRecordReader
+/// @notice Reads `subgraph/networks.json`: the network keys, the flattened
+/// datasources, and the `LibRainDeploy` network each Graph network name
+/// corresponds to. Shared between the record suite below and the fork suite in
+/// `SubgraphStartBlock.t.sol`, which must agree on what the file says while
+/// staying SEPARATE contracts: a contract boundary is what `forge test
+/// --match-contract` selects at, so an unreachable RPC endpoint can red the
+/// fork suite without touching an assertion that reads only this repo.
+abstract contract SubgraphRecordReader is Test {
     /// The subgraph's per-network deployment table, and the whole of this
     /// repo's share of the subgraph.
     string constant NETWORKS_JSON = "subgraph/networks.json";
@@ -166,7 +122,61 @@ contract SubgraphDeployRecordTest is Test {
         }
         revert UnmappedSubgraphNetwork(graphNetwork);
     }
+}
 
+/// @title SubgraphDeployRecordTest
+/// @notice `subgraph/networks.json` checked against this repo's deploy records
+/// — the check rainlanguage/rain.metadata#134 lost and #2 moved the table here
+/// to get back.
+///
+/// Before the split, `networks.json`'s address sat in the same tree as
+/// `METABOARD_DEPLOYED_ADDRESS` and could be compared to it. The split took the
+/// constant away and left `networks.json` as the only place in the org naming a
+/// live `MetaBoard`, with nothing to check it against. Both halves are here
+/// again, so the comparison is a test rather than a convention.
+///
+/// `networks.json` is ALL this repo holds under `subgraph/`
+/// (rainlanguage/rain.metadata#149): the manifest, schema, mappings and
+/// matchstick suite are subgraph SOURCE and stay in `rain.metadata`, which is
+/// also where the manifest is pinned to the interface it indexes. So every
+/// assertion below reads the network table and this repo's own records, and
+/// nothing here reads a manifest — there is not one in this tree to read, and
+/// one fetched at deploy time is not a thing a per-push test can hold.
+///
+/// This is a Solidity test, in the existing `rainix-sol` lane, deliberately.
+/// The deploy record IS Solidity — `LibMetaBoardReleased` and
+/// `LibRainDeploy.supportedNetworks()` are the things being compared against —
+/// so a check written anywhere else would have to re-spell the record in
+/// another language and could then disagree with it. It also means the check
+/// needs no docker, no node and no matchstick: the lane that already gates
+/// every push runs it.
+///
+/// What each assertion is worth TODAY:
+///
+/// - Released deploys are indexed (`testEveryReleasedDeployIsIndexedOnEveryNetwork`).
+///   This is the assertion #2 is about, and it is EMPTY-TRUE right now: this
+///   repo has cut no `sol-v*` tag, so `LibMetaBoardReleased.releasedSuites()`
+///   is empty and there is nothing to demand. That is the honest state of the
+///   world and it is not dressed up as more. It arms itself: the first release
+///   puts an address in the record, and from that moment the subgraph must name
+///   it on every network it indexes or this test is red. A mutation that puts
+///   a release into the record shows it bites rather than passes.
+///
+/// - Everything else here is live today and does real work: the table parses to
+///   something, one address per datasource across networks, every indexed
+///   network a network this repo broadcasts to, no datasource starting at
+///   genesis.
+///
+/// What is deliberately NOT asserted: that `networks.json`'s address is one
+/// this repo has a record of. It is not — `0xfb8437Ae...` is the v1 `MetaBoard`,
+/// deployed before this repo existed, and #2 rules that it stays because it is
+/// what the subgraph indexes today, not a historical record to purge. Nor is
+/// the candidate's address refused, because the deploy is dispatched BEFORE the
+/// release is tagged, so there is a legitimate window in which `networks.json`
+/// names a freshly broadcast candidate that no frozen snapshot covers yet. An
+/// assertion that failed during that window would be an assertion the release
+/// process has to be worked around.
+contract SubgraphDeployRecordTest is SubgraphRecordReader {
     /// `networks.json` MUST describe at least one datasource.
     ///
     /// Every other assertion here loops over what this parses. A file that
