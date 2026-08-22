@@ -10,10 +10,11 @@ rain.metadata.deploy is the **deploy half** of `rain.metadata`: the concrete
 `MetaBoard` (an `IMetaBoardV1_2` that is nothing but one delegation per entry
 point into `LibIMetaBoardV1_2`) plus its deployed address + codehash pins. The
 `IMeta*` **interfaces and the metaboard logic are NOT here** — they live in
-`rain.metadata` and arrive as the `rain-metadata` Soldeer dependency. The rust
-crates are not here either: `crates/metaboard` is a Cynic client keyed by
-endpoint URL, with no address or Goldsky coupling, so it stays with the library
-half. Only the subgraph's deployment record is here — see below.
+`rain.metadata` and arrive as the `rain-metadata` Soldeer dependency. The
+subgraph SOURCE and the metadata rust crates stay in `rain.metadata` too
+(`crates/metaboard` is a Cynic client keyed by endpoint URL). Here: the
+subgraph's deployment record — see below — and one crate reporting on Goldsky
+deploys, which is not metadata logic.
 
 ## Conventions an agent would get wrong
 
@@ -24,7 +25,8 @@ half. Only the subgraph's deployment record is here — see below.
   `bytecode_hash = "none"`). The deployed address is a pure function of the
   bytecode (deterministic Zoltu deployer), so any of these changing moves the
   pins.
-- All source files need SPDX headers (LicenseRef-DCL-1.0).
+- Solidity sources need SPDX headers (LicenseRef-DCL-1.0); rust does not —
+  `REUSE.toml` globs cover `crates/**/`.
 
 ## Deploy-pin invariants (the hazards)
 

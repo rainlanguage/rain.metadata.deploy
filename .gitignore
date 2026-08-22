@@ -6,6 +6,7 @@ result
 dependencies
 remappings.txt
 .pre-commit-config.yaml
+<<<<<<< HEAD
 
 # `subgraph/networks.json` is the only file this repo owns under `subgraph/`.
 # The `Subgraph manual deploy` workflow fetches the SOURCE from rain.metadata
@@ -14,3 +15,6 @@ remappings.txt
 # transient and none of it is this repo's to commit.
 /subgraph/*
 !/subgraph/networks.json
+=======
+target
+>>>>>>> origin/main
