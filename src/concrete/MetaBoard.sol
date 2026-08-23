@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {IMetaBoardV1_2} from "rain-metadata-0.1.5/src/interface/unstable/IMetaBoardV1_2.sol";
-import {LibIMetaBoardV1_2} from "rain-metadata-0.1.5/src/lib/LibIMetaBoardV1_2.sol";
+import {IMetaBoardV1_2} from "rain-metadata-0.1.7/src/interface/unstable/IMetaBoardV1_2.sol";
+import {LibIMetaBoardV1_2} from "rain-metadata-0.1.7/src/lib/LibIMetaBoardV1_2.sol";
 
 /// @title MetaBoard
 /// @notice The deployed concrete `IMetaBoardV1_2`: every function is a single
