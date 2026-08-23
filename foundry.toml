@@ -8,7 +8,7 @@
 # `script/Build.sol`'s `cutRelease()` to locate the snapshot it freezes.
 [external.package]
 name = "rain-metadata-deploy"
-version = "0.1.0"
+version = "0.1.1"
 
 [profile.default]
 src = 'src'
