@@ -49,8 +49,8 @@ import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.s
 ///   genesis.
 ///
 /// What is deliberately NOT asserted: that every address in `networks.json` is
-/// one this repo has a record of. Today the table names only the released
-/// `0.1.0` address, but the deploy is dispatched BEFORE the release is tagged,
+/// one this repo has a record of. Today the table names only released
+/// addresses, but the deploy is dispatched BEFORE the release is tagged,
 /// so there is a legitimate window in which `networks.json` names a freshly
 /// broadcast candidate that no frozen snapshot covers yet. An assertion that
 /// failed during that window would be an assertion the release process has to

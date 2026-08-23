@@ -14,10 +14,10 @@ integrity = "e51da6f2b3a0f427a0aac5d7714bed2027f5cf0f39b31f0692e9623ceeaa47f2"
 
 [[dependencies]]
 name = "rain-metadata"
-version = "0.1.5"
-url = "https://soldeer-revisions.s3.amazonaws.com/rain-metadata/0_1_5_20-08-2026_18:36:55_rain.zip"
-checksum = "e893c2ad2007b0c6cca3f28f3486118a32b1ed27b8799c7601f1944b0b4637db"
-integrity = "7413cd277aa7a36fe995d42392af14b0859bed3aed7eb55ac1b2f6ffcdbfdbb6"
+version = "0.1.7"
+url = "https://soldeer-revisions.s3.amazonaws.com/rain-metadata/0_1_7_21-08-2026_20:06:55_rain.zip"
+checksum = "6d5709e3f5f926ad6c260820b423b370d9c1f3fe0ef9d5e0b7d5cca19ed8e85e"
+integrity = "176af355c734ef954434b1fc60907b42bda8b55d5cf540eefb87b574f8148b80"
 
 [[dependencies]]
 name = "rain-sol-codegen"

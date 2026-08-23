@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {LibIMetaBoardV1_2} from "rain-metadata-0.1.5/src/lib/LibIMetaBoardV1_2.sol";
+import {LibIMetaBoardV1_2} from "rain-metadata-0.1.7/src/lib/LibIMetaBoardV1_2.sol";
 
 /// @title TestLibIMetaBoardV1_2
 /// @notice `LibIMetaBoardV1_2` run bare behind its own delegating surface,

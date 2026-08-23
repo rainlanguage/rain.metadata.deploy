@@ -51,8 +51,8 @@ deploys, which is not metadata logic.
   source (`metadata-ref`) and merges it in beside the table, and `graph build`
   rewrites the manifest in place — hence `.gitignore` ignores all of `subgraph/`
   except the table. Nothing else here runs a subgraph command.
-- The table names the **0.1.0** `MetaBoard` (`0x8fD50fF9...`) — this repo's own
-  frozen release — on all seven deploy networks, each `startBlock` the chain's
+- The table names the `MetaBoard` (`0x8fD50fF9...`) that every frozen release
+  here records — on all seven deploy networks, each `startBlock` the chain's
   verified deploy block (#4). The v1 board (`0xfb8437Ae...`) survives here only
   in git history.
 - `SubgraphDeployRecord.t.sol`'s release-coverage assertion armed at

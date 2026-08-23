@@ -23,3 +23,7 @@ CLAUDE.md
 /REUSE.toml
 /script
 /test
+/Cargo.toml
+/Cargo.lock
+/crates
+/target
