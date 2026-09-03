@@ -1,0 +1,79 @@
+name: Subgraph report
+# Read-only reporting over Goldsky's subgraph listing: what is deployed, on
+# which networks, and which superseded versions are reaping candidates. The
+# reporter can issue exactly one request — the listing GET — so this workflow
+# cannot delete, pause or mutate anything on Goldsky however it is dispatched,
+# which is why no admin gate sits in front of it.
+on:
+  workflow_dispatch:
+    inputs:
+      name-prefixes:
+        description: >-
+          Space-separated name prefixes to report on. The current deploy rule produces metaboard-<network>; older live deploys use other stems, so add them here to widen the sweep.
+        required: false
+        default: metaboard
+      min-age-days:
+        description: >-
+          A superseded version must be at least this many days old to be listed as a reaping candidate.
+        required: false
+        default: "30"
+# Read-only, stated rather than left to the repo default: nothing here needs
+# to write anything back, and the build step compiles third-party crates'
+# build scripts, which is code this repo did not review.
+permissions:
+  contents: read
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      # `persist-credentials: false`: nothing here pushes, and third-party
+      # build scripts run in this job, so a git config holding the ambient
+      # token would be one `git config --get` away from them.
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: nixbuild/nix-quick-install-action@v30
+        with:
+          nix_conf: |
+            keep-env-derivations = true
+            keep-outputs = true
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 1G
+      # Built in its own step so the Goldsky token is not in the environment
+      # while `buildRustPackage` runs the dependency crates' build scripts.
+      # The run step below is the only step that can read the secret.
+      - name: Build the reporter
+        run: nix build .#metaboard-subgraph-report
+      - name: Run the report
+        env:
+          # The org's CI secret, surfaced under the name the binary reads.
+          GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
+          # Dispatch inputs arrive via env rather than interpolated into the
+          # script text. A field blanked in the dispatch form arrives empty, so
+          # the CLI defaults are restated as shell fallbacks below.
+          NAME_PREFIXES: ${{ inputs.name-prefixes }}
+          MIN_AGE_DAYS: ${{ inputs.min-age-days }}
+        run: |
+          set -euo pipefail
+          args=()
+          read -r -a stems <<< "${NAME_PREFIXES:-metaboard}"
+          for stem in "${stems[@]}"; do
+            args+=(--name-prefix "$stem")
+          done
+          args+=(--min-age-days "${MIN_AGE_DAYS:-30}")
+          ./result/bin/metaboard-subgraph-report "${args[@]}" | tee report.txt
+          # Into the run summary as well as the log: the table is the one
+          # fact this run produces, and the summary is readable from the run
+          # page without downloading artifacts or opening the log.
+          {
+            echo '## Metaboard subgraph report'
+            echo
+            echo '```'
+            cat report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
