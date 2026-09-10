@@ -2,10 +2,10 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {BuildScript} from "rain-deploy-0.1.7/src/abstract/BuildScript.sol";
+import {BuildScript} from "rain-deploy-0.1.8/src/abstract/BuildScript.sol";
 import {DeployCandidate} from "../src/abstract/RainDeploySuitesBase.sol";
 import {MetaBoardDeploySuites} from "../src/abstract/MetaBoardDeploySuites.sol";
-import {LibRainDeploySnapshot} from "rain-deploy-0.1.7/src/lib/LibRainDeploySnapshot.sol";
+import {LibRainDeploySnapshot} from "rain-deploy-0.1.8/src/lib/LibRainDeploySnapshot.sol";
 
 /// One contract's generated files: the rolling snapshot, the alias lib that
 /// re-exports its pins and the released-suites lib emitted from its record.
