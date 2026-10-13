@@ -39,7 +39,7 @@ docker, node or matchstick.
 Deploys are manual. The `Subgraph manual deploy` workflow (`workflow_dispatch`,
 with a `metadata-ref` input naming the subgraph source revision) checks out that
 source, merges it in beside `networks.json`, builds the ABI the manifest reads,
-and publishes to Goldsky under the subgraph name `metaboard`.
+and publishes to Ormi under the subgraph name `metaboard`.
 
 The Cynic GraphQL client that _consumes_ this subgraph (`crates/metaboard`,
 published as `rain-metaboard-subgraph`) stays in `rain.metadata`: it is keyed by
@@ -61,6 +61,9 @@ freezes the current `src/generated/candidate/` snapshot into a new
 See rainlanguage/rain.metadata#134 for the split rationale.
 
 ## Deployed subgraph reporting
+
+New deploys go to Ormi. This report does not see them. It stays as the listing
+of what is still on Goldsky, so those versions can be drained.
 
 `crates/metaboard-subgraph-report` enumerates the subgraphs deployed on Goldsky
 and reports which deployed versions have been superseded, so unused deploys can

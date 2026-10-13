@@ -44,13 +44,9 @@ deploys, which is not metadata logic.
 
 ## The subgraph: one file here (#2, recut by rain.metadata#149)
 
-- `subgraph/networks.json` (per-network address + start block) is a deploy
-  record and the WHOLE of this repo's share. Manifest, schema, mappings and
-  matchstick suite are SOURCE and stay in `rain.metadata`, which pins the
-  manifest to the interface it indexes. `Subgraph manual deploy` fetches that
-  source (`metadata-ref`) and merges it in beside the table, and `graph build`
-  rewrites the manifest in place — hence `.gitignore` ignores all of `subgraph/`
-  except the table. Nothing else here runs a subgraph command.
+- `subgraph/networks.json` is this repo's only subgraph file. Manifest, schema,
+  mappings and tests stay in `rain.metadata`. `Subgraph manual deploy` checks
+  out `metadata-ref` and merges it beside that table.
 - The table names the `MetaBoard` (`0x8fD50fF9...`) that every frozen release
   here records — on all seven deploy networks, each `startBlock` the chain's
   verified deploy block (#4). The v1 board (`0xfb8437Ae...`) survives here only
@@ -61,9 +57,12 @@ deploys, which is not metadata logic.
 - The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
   `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
   its mapping in that test in the same change, or it fails closed.
-- The Goldsky version is `<address>-<short commit of THIS repo>`, not of the
-  source, so two dispatches from one commit against different `metadata-ref`s
-  collide and the second is skipped as already deployed (rainix#354).
+- The deploy version label is `<address>-<short commit of THIS repo>`, not of
+  the source, so two dispatches from one commit against different
+  `metadata-ref`s collide and the second is skipped as already deployed
+  (rainix#354).
+- Local `subgraph-deploy` still publishes to Goldsky. Ormi deploys go through
+  `Subgraph manual deploy`.
 
 ## Release / deploy shape
 

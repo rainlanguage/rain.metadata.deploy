@@ -13,10 +13,10 @@ on:
 # needs to write anything back.
 permissions:
   contents: read
-# One deploy at a time. `GOLDSKY_SUBGRAPH_NAME` is a single name, so two
-# dispatches publish over each other. Never cancelled: a half-finished
-# seven-network loop leaves Goldsky holding some networks from one run and some
-# from the other, which is worse than waiting.
+# One deploy at a time. `SUBGRAPH_NAME` is a single name, so two dispatches
+# publish over each other. Never cancelled: a half-finished seven-network loop
+# leaves Ormi holding some networks from one run and some from the other, which
+# is worse than waiting.
 concurrency:
   group: subgraph-manual-deploy
   cancel-in-progress: false
@@ -24,8 +24,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
-      GOLDSKY_SUBGRAPH_NAME: metaboard
+      SUBGRAPH_NAME: metaboard
+      # Public query base for this Ormi account. subgraph-deploy skips a version
+      # that already answers here. The deploy key stays off this job env, so
+      # the earlier steps cannot see it.
+      ORMI_QUERY_BASE: https://subgraph.api.ormilabs.com/api/public/9f4fc2fa-4a15-44f7-a7c1-66fdaa518a71
     steps:
       # `persist-credentials: false` on both checkouts: the fetched subgraph
       # source's install scripts run in this job, and a git config holding the
@@ -83,7 +86,7 @@ jobs:
         run: |
           nix develop github:rainlanguage/rainix#sol-shell -c forge soldeer install
           nix develop github:rainlanguage/rainix#sol-shell -c forge build
-      # Fail here rather than part way through a seven-network Goldsky loop: the
+      # Fail here rather than part way through a seven-network deploy loop: the
       # manifest's ABI paths are a cross-repo coupling and this is the first
       # place they can be resolved. Read out of the manifest with `yq` rather
       # than grepped for: `file:` also names the schema and the mapping, and a
@@ -100,12 +103,12 @@ jobs:
               test -f "subgraph/$abi"
             done <<< "$abis"
           '
-      # `subgraph-deploy` runs `npm ci` and then `graph build --network`, and
-      # `graph build` does NOT codegen. It compiles `src/metaBoard.ts`, which
-      # imports `../generated/metaboard0/MetaBoard` and `../generated/schema` —
-      # generated files, gitignored in the library half, so they never arrive
-      # with the fetched source. Without this step the AssemblyScript compile
-      # fails on two unresolved imports for every network in the loop.
+      # `subgraph-deploy` runs `npm ci` and then `graph deploy`, which compiles
+      # `src/metaBoard.ts`. That file imports `../generated/metaboard0/MetaBoard`
+      # and `../generated/schema` — generated files, gitignored in the library
+      # half, so they never arrive with the fetched source. Without this step
+      # the AssemblyScript compile fails on two unresolved imports for every
+      # network in the loop.
       #
       # `npm ci` here is the same install `subgraph-deploy` repeats. It removes
       # `node_modules` and not `generated/`, so the types survive into it.
@@ -113,24 +116,37 @@ jobs:
         run: nix develop --command bash -c 'cd subgraph && npm ci && graph codegen'
       - name: Deploy and capture URLs
         id: deploy
+        env:
+          # GitHub secret ORMI_DEPLOY_KEY, from Vault secret/infra/rain/ormi (deploy_key).
+          # Kept out of the earlier steps. During this step the fetched
+          # metadata-ref source is trusted with it: `graph deploy` receives the
+          # key as an argument and compiles that source, and the `npm ci` inside
+          # subgraph-deploy runs its install scripts here too.
+          ORMI_DEPLOY_KEY: ${{ secrets.ORMI_DEPLOY_KEY }}
         run: |
           set -o pipefail
-          nix develop --command subgraph-deploy 2>&1 | tee deploy.log
+          # flake.lock still pins the rainix that deploys with the Goldsky CLI.
+          # This rev is the rainix whose subgraph-deploy publishes to Ormi.
+          # Pinned so the step that holds the deploy key does not follow rainix
+          # main, and so the log lines parsed below stay the ones that rev prints.
+          deploy_status=0
+          nix develop github:rainlanguage/rainix/553ae011bbd472a60d64efb13a76c6600d7de66e#subgraph-shell -c subgraph-deploy 2>&1 | tee deploy.log || deploy_status=$?
           echo
-          # `subgraph-deploy` skips a network whose version Goldsky already
-          # holds, and prints no URL for it. A re-dispatch that skips every
-          # network is a SUCCESSFUL no-op matching nothing, and `grep` answers
-          # no-match with exit 1 — which `pipefail` plus the runner's `-e` would
-          # read as a failed deploy. So exit 1 is folded into an empty list, and
-          # only exit 1: anything above it is `grep` failing rather than not
-          # matching, and still fails the step.
-          matched=0
-          grep -oE 'https://api\.goldsky\.com/api/public/[^[:space:]]+/gn' deploy.log > matched_urls.txt || matched=$?
-          if [ "$matched" -gt 1 ]; then
-            exit "$matched"
-          fi
-          sort -u matched_urls.txt > deployed_urls.txt
-          echo "::group::Deployed Goldsky URLs"
+          # A skipped network prints "already deployed, skipping" and no URL.
+          # A failed one prints "Deploy of <name>/<version> failed". Only a
+          # "Deploying" line with no matching failure was published this run.
+          # Written even when deploy_status is nonzero: a later network failing
+          # must not drop the URLs of the ones that published, because a
+          # re-dispatch skips those and no later summary would list them.
+          : > deployed_urls.txt
+          while read -r name version; do
+            if grep -q "Deploy of ${name}/${version} failed" deploy.log; then
+              continue
+            fi
+            echo "${ORMI_QUERY_BASE}/subgraphs/${name}/${version}/gn" >> deployed_urls.txt
+          done < <(sed -n 's/^Deploying subgraph \([^/]*\)\/\(.*\)\.\.\.$/\1 \2/p' deploy.log)
+          sort -u -o deployed_urls.txt deployed_urls.txt
+          echo "::group::Deployed Ormi URLs"
           cat deployed_urls.txt
           echo "::endgroup::"
           # Into the run summary as well as the log: `deployed_urls.txt` lives
@@ -141,14 +157,18 @@ jobs:
           #
           # The empty case is spelled rather than left as an empty list: a
           # summary reading "Deployed:" and then nothing looks like a broken
-          # step rather than the no-op it is.
+          # step rather than the no-op it is. A nonzero status with an empty
+          # list is a failed run, not that no-op.
           {
             echo
             if [ -s deployed_urls.txt ]; then
               echo "Deployed:"
               echo
               sed 's|^|- |' deployed_urls.txt
+            elif [ "$deploy_status" -ne 0 ]; then
+              echo "Deployed: none of the networks that were attempted completed. See the log."
             else
               echo "Deployed: nothing. Every network already held this version."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+          exit "$deploy_status"
