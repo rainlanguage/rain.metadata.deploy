@@ -6,6 +6,7 @@ result
 dependencies
 remappings.txt
 .pre-commit-config.yaml
+.staged-config
 target
 
 # `subgraph/networks.json` is the only file this repo owns under `subgraph/`.

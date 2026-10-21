@@ -2,10 +2,10 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {BuildScript} from "rain-deploy-0.1.8/src/abstract/BuildScript.sol";
-import {DeployCandidate} from "../src/abstract/RainDeploySuitesBase.sol";
+import {BuildScript} from "rain-deploy-0.1.18/src/abstract/BuildScript.sol";
+import {DeployCandidate} from "rain-deploy-0.1.18/src/abstract/RainDeploySuitesBase.sol";
 import {MetaBoardDeploySuites} from "../src/abstract/MetaBoardDeploySuites.sol";
-import {LibRainDeploySnapshot} from "rain-deploy-0.1.8/src/lib/LibRainDeploySnapshot.sol";
+import {LibRainDeploySnapshot} from "rain-deploy-0.1.18/src/lib/LibRainDeploySnapshot.sol";
 
 /// One contract's generated files: the rolling snapshot, the alias lib that
 /// re-exports its pins and the released-suites lib emitted from its record.
@@ -15,9 +15,9 @@ struct GeneratedContract {
     string contractName;
     /// Prefix for the constants the alias lib exports, e.g. `META_BOARD`.
     string constantPrefix;
-    /// Snapshots are written from its `sourceCreationCode` and
-    /// `snapshot.dependencies`; the released lib takes its suite key and
-    /// artifact path from its `snapshot`.
+    /// Snapshots are written from what its `snapshot.artifactPath` compiles
+    /// to and its `snapshot.dependencies`; the released lib takes its suite
+    /// key and artifact path from its `snapshot`.
     DeployCandidate candidate;
 }
 
@@ -83,9 +83,10 @@ contract Build is BuildScript, MetaBoardDeploySuites {
         for (uint256 i = 0; i < contracts.length; i++) {
             LibRainDeploySnapshot.writeSnapshot(
                 vm,
+                recordRoot(),
                 LibRainDeploySnapshot.CANDIDATE,
                 contracts[i].contractName,
-                contracts[i].candidate.sourceCreationCode,
+                vm.getCode(contracts[i].candidate.snapshot.artifactPath),
                 contracts[i].candidate.snapshot.dependencies
             );
         }
