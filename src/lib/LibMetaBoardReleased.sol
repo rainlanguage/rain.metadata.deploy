@@ -7,6 +7,14 @@ pragma solidity ^0.8.25;
 import {DeployDependency, DeployMechanism, DeploySuite} from "rain-deploy-0.1.19/src/abstract/RainDeploySuitesBase.sol";
 
 import {
+    DEPLOYED_ADDRESS as MetaBoard_0_0_0_DEPLOYED_ADDRESS,
+    BYTECODE_HASH as MetaBoard_0_0_0_BYTECODE_HASH,
+    CREATION_CODE as MetaBoard_0_0_0_CREATION_CODE,
+    RUNTIME_CODE as MetaBoard_0_0_0_RUNTIME_CODE,
+    DEPENDENCIES as MetaBoard_0_0_0_DEPENDENCIES
+} from "../generated/0_0_0/MetaBoard.sol";
+
+import {
     DEPLOYED_ADDRESS as MetaBoard_0_1_0_DEPLOYED_ADDRESS,
     BYTECODE_HASH as MetaBoard_0_1_0_BYTECODE_HASH,
     CREATION_CODE as MetaBoard_0_1_0_CREATION_CODE,
@@ -42,8 +50,19 @@ library LibMetaBoardReleased {
     /// Every frozen release, in tag order.
     /// @return The released suites.
     function releasedSuites() internal pure returns (DeploySuite[] memory) {
-        DeploySuite[] memory suites = new DeploySuite[](2);
+        DeploySuite[] memory suites = new DeploySuite[](3);
         suites[0] = DeploySuite({
+            suite: "metaboard@0_0_0",
+            creationCode: MetaBoard_0_0_0_CREATION_CODE,
+            storedDeployedAddress: MetaBoard_0_0_0_DEPLOYED_ADDRESS,
+            storedBytecodeHash: MetaBoard_0_0_0_BYTECODE_HASH,
+            storedRuntimeCode: MetaBoard_0_0_0_RUNTIME_CODE,
+            artifactPath: "src/concrete/MetaBoard.sol:MetaBoard",
+            dependencies: abi.decode(MetaBoard_0_0_0_DEPENDENCIES, (DeployDependency[])),
+            mechanism: DeployMechanism.Zoltu,
+            mechanismData: ""
+        });
+        suites[1] = DeploySuite({
             suite: "metaboard@0_1_0",
             creationCode: MetaBoard_0_1_0_CREATION_CODE,
             storedDeployedAddress: MetaBoard_0_1_0_DEPLOYED_ADDRESS,
@@ -54,7 +73,7 @@ library LibMetaBoardReleased {
             mechanism: DeployMechanism.Zoltu,
             mechanismData: ""
         });
-        suites[1] = DeploySuite({
+        suites[2] = DeploySuite({
             suite: "metaboard@0_1_1",
             creationCode: MetaBoard_0_1_1_CREATION_CODE,
             storedDeployedAddress: MetaBoard_0_1_1_DEPLOYED_ADDRESS,

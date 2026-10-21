@@ -8,6 +8,7 @@ on:
         type: choice
         options:
           - metaboard
+          - metaboard@0_0_0
           - metaboard@0_1_0
           - metaboard@0_1_1
       verify:

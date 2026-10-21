@@ -49,8 +49,8 @@ deploys, which is not metadata logic.
   out `metadata-ref` and merges it beside that table.
 - The table names the `MetaBoard` (`0x8fD50fF9...`) that every frozen release
   here records — on all seven deploy networks, each `startBlock` the chain's
-  verified deploy block (#4). The v1 board (`0xfb8437Ae...`) survives here only
-  in git history.
+  verified deploy block (#4). The v1 board (`0xfb8437Ae...`) is frozen as
+  `0_0_0`, from its chain deploy, and is deliberately not indexed.
 - `SubgraphDeployRecord.t.sol`'s release-coverage assertion armed at
   `sol-v0.1.0`: every frozen release must be indexed on every indexed network,
   or the suite is red.
