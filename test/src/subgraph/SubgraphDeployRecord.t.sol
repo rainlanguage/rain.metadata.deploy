@@ -5,6 +5,7 @@ pragma solidity =0.8.25;
 import {LibRainDeploy} from "rain-deploy-0.1.19/src/lib/LibRainDeploy.sol";
 import {DeploySuite} from "rain-deploy-0.1.19/src/abstract/RainDeploySuitesBase.sol";
 import {LibMetaBoardReleased} from "src/lib/LibMetaBoardReleased.sol";
+import {DEPLOYED_ADDRESS as META_BOARD_V1_ADDRESS} from "src/generated/0_0_0/MetaBoard.sol";
 import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.sol";
 
 /// @title SubgraphDeployRecordTest
@@ -54,9 +55,7 @@ import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.s
 /// so there is a legitimate window in which `networks.json` names a freshly
 /// broadcast candidate that no frozen snapshot covers yet. An assertion that
 /// failed during that window would be an assertion the release process has to
-/// be worked around. (The v1 `MetaBoard` the table named before the flip is
-/// gone from this repo outside git history; rainlanguage/rain.metadata.deploy#4
-/// records the flip.)
+/// be worked around.
 contract SubgraphDeployRecordTest is SubgraphRecordReader {
     /// `networks.json` MUST describe at least one datasource.
     ///
@@ -149,6 +148,9 @@ contract SubgraphDeployRecordTest is SubgraphRecordReader {
     /// second contract added later would not be a `MetaBoard` the metaboard
     /// subgraph should be indexing.
     ///
+    /// Except the v1 board frozen as `0_0_0`, which the table stopped indexing at the
+    /// flip (rainlanguage/rain.metadata.deploy#4).
+    ///
     /// EMPTY-TRUE until the first release. See the contract natspec.
     function testEveryReleasedDeployIsIndexedOnEveryNetwork() external view {
         DeploySuite[] memory released = LibMetaBoardReleased.releasedSuites();
@@ -156,6 +158,9 @@ contract SubgraphDeployRecordTest is SubgraphRecordReader {
         string[] memory networks = graphNetworks();
 
         for (uint256 i = 0; i < released.length; i++) {
+            if (released[i].storedDeployedAddress == META_BOARD_V1_ADDRESS) {
+                continue;
+            }
             for (uint256 n = 0; n < networks.length; n++) {
                 bool isIndexed = false;
                 for (uint256 j = 0; j < sources.length; j++) {
