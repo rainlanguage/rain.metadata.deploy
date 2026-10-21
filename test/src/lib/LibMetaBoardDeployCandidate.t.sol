@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {Test} from "forge-std-1.16.2/src/Test.sol";
-import {LibRainDeploy} from "rain-deploy-0.1.8/src/lib/LibRainDeploy.sol";
+import {Test} from "forge-std-1.17.0/src/Test.sol";
+import {DeployDependency, LibRainDeploy} from "rain-deploy-0.1.18/src/lib/LibRainDeploy.sol";
 import {
     BYTECODE_HASH,
     DEPLOYED_ADDRESS,
@@ -59,7 +59,7 @@ contract LibMetaBoardDeployCandidateTest is Test {
     /// `MetaBoard` has no contracts that must already have code on a network
     /// before it can be broadcast, so the recorded dependency list is empty.
     function testCandidateHasNoDependencies() external pure {
-        address[] memory dependencies = abi.decode(DEPENDENCIES, (address[]));
+        DeployDependency[] memory dependencies = abi.decode(DEPENDENCIES, (DeployDependency[]));
         assertEq(dependencies.length, 0, "candidate records unexpected deploy dependencies");
     }
 }

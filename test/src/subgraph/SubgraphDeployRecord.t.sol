@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {LibRainDeploy} from "rain-deploy-0.1.8/src/lib/LibRainDeploy.sol";
-import {DeploySuite} from "src/abstract/RainDeploySuitesBase.sol";
+import {LibRainDeploy} from "rain-deploy-0.1.18/src/lib/LibRainDeploy.sol";
+import {DeploySuite} from "rain-deploy-0.1.18/src/abstract/RainDeploySuitesBase.sol";
 import {LibMetaBoardReleased} from "src/lib/LibMetaBoardReleased.sol";
 import {SubgraphRecordReader, SubgraphDataSource} from "./SubgraphRecordReader.sol";
 

@@ -2,8 +2,12 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity ^0.8.25;
 
-import {DeployCandidate, DeploySuite, RainDeploySuitesBase} from "./RainDeploySuitesBase.sol";
-import {MetaBoard} from "../concrete/MetaBoard.sol";
+import {
+    DeployCandidate,
+    DeployDependency,
+    DeploySuite,
+    RainDeploySuitesBase
+} from "rain-deploy-0.1.18/src/abstract/RainDeploySuitesBase.sol";
 import {
     CREATION_CODE as META_BOARD_CREATION_CODE_CANDIDATE,
     RUNTIME_CODE as META_BOARD_RUNTIME_CODE_CANDIDATE
@@ -50,9 +54,9 @@ abstract contract MetaBoardDeploySuites is RainDeploySuitesBase {
                 storedBytecodeHash: LibMetaBoardDeploy.META_BOARD_DEPLOYED_CODEHASH,
                 storedRuntimeCode: META_BOARD_RUNTIME_CODE_CANDIDATE,
                 artifactPath: "src/concrete/MetaBoard.sol:MetaBoard",
-                dependencies: new address[](0)
+                dependencies: new DeployDependency[](0)
             }),
-            sourceCreationCode: type(MetaBoard).creationCode
+            unanchorableReason: ""
         });
     }
 }

@@ -10,9 +10,15 @@ on:
           - metaboard
           - metaboard@0_1_0
           - metaboard@0_1_1
+      verify:
+        description: "Verify on the block explorer; off for a frozen release whose bytecode no longer matches current source"
+        required: false
+        type: boolean
+        default: true
 jobs:
   deploy:
     uses: rainlanguage/rainix/.github/workflows/rainix-manual-sol-artifacts.yaml@main
     with:
       suite: ${{ inputs.suite }}
+      verify: ${{ inputs.verify }}
     secrets: inherit
