@@ -48,12 +48,12 @@ deploys, which is not metadata logic.
   mappings and tests stay in `rain.metadata`. `Subgraph manual deploy` checks
   out `metadata-ref` and merges it beside that table.
 - The table names the `MetaBoard` (`0x8fD50fF9...`) that every frozen release
-  here records — on all seven deploy networks, each `startBlock` the chain's
-  verified deploy block (#4). The v1 board (`0xfb8437Ae...`) is frozen as
-  `0_0_0`, from its chain deploy, and is deliberately not indexed.
+  from `0_1_0` records — on all seven deploy networks, each `startBlock` the
+  chain's verified deploy block (#4). `0_0_0` is the v1 board (`0xfb8437Ae...`),
+  frozen from its chain deploy and deliberately not indexed.
 - `SubgraphDeployRecord.t.sol`'s release-coverage assertion armed at
-  `sol-v0.1.0`: every frozen release must be indexed on every indexed network,
-  or the suite is red.
+  `sol-v0.1.0`: every frozen release except `0_0_0` must be indexed on every
+  indexed network, or the suite is red.
 - The Graph and `LibRainDeploy` spell chains differently (`matic`/`polygon`,
   `arbitrum-one`/`arbitrum`). Adding a network to `networks.json` means adding
   its mapping in that test in the same change, or it fails closed.
