@@ -76,10 +76,16 @@ forge-std = "1.17.0"
 # `IMetaBoardV1_2`, `IMetaV1_2`, `LibIMetaBoardV1_2` and `LibMeta` — the library
 # half `MetaBoard` is nothing but a delegation into.
 "rain-metadata" = "0.1.43"
-"rain-deploy" = "0.1.18"
+"rain-deploy" = "0.1.19"
 # `LibRainDeploySnapshot` — reached from `script/Build.sol` and the shipped
 # verify abstracts — emits the generated record via `LibCodeGen`/`LibFs`.
 "rain-sol-codegen" = "0.1.39"
+# `ICloneableFactoryV4`/`V5` — `rain-deploy`'s `LibRainDeployMechanism` imports
+# them under `rain-factory-0.2.0/`.
+"rain-factory" = "0.2.0"
+# `IBeacon`, `UpgradeableBeacon`, `Ownable2Step` and `IERC5313` — `rain-deploy`'s
+# beacon libs import them under `@openzeppelin-contracts-5.7.0/`.
+"@openzeppelin-contracts" = "5.7.0"
 
 [soldeer]
 recursive_deps = false
