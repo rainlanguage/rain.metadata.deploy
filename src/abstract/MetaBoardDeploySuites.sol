@@ -8,7 +8,7 @@ import {
     DeployMechanism,
     DeploySuite,
     RainDeploySuitesBase
-} from "rain-deploy-0.1.21/src/abstract/RainDeploySuitesBase.sol";
+} from "rain-deploy-0.1.22/src/abstract/RainDeploySuitesBase.sol";
 import {
     CREATION_CODE as META_BOARD_CREATION_CODE_CANDIDATE,
     RUNTIME_CODE as META_BOARD_RUNTIME_CODE_CANDIDATE
