@@ -27,3 +27,4 @@ CLAUDE.md
 /Cargo.lock
 /crates
 /target
+.env.example
