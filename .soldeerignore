@@ -1,12 +1,4 @@
-.DS_Store
-.coderabbitai.yaml
-.gas-snapshot
-.git
-.github
-.gitignore
-.pre-commit-config.yaml
-.soldeerignore
-.vscode
+.*
 CLAUDE.md
 /audit
 /cache
