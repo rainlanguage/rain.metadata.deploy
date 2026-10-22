@@ -3,7 +3,7 @@
 pragma solidity =0.8.25;
 
 import {Test} from "forge-std-1.17.0/src/Test.sol";
-import {DeployDependency, LibRainDeploy} from "rain-deploy-0.1.20/src/lib/LibRainDeploy.sol";
+import {DeployDependency, LibRainDeploy} from "rain-deploy-0.1.21/src/lib/LibRainDeploy.sol";
 import {
     BYTECODE_HASH,
     DEPLOYED_ADDRESS,

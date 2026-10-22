@@ -35,7 +35,7 @@ cbor_metadata = false
 # candidate snapshot and the generated libs under `src/`, reads the release
 # version from this file when `cutRelease()` runs, and stages the regenerated
 # network sections of this file and `.env.example` under `.staged-config/` for
-# `script/build.sh` to install: foundry refuses a cheatcode write to this file
+# rainix to install: foundry refuses a cheatcode write to this file
 # whatever is granted here.
 # `MetaBoardDeploySnapshotTest`'s inherited frozen-record walk reads
 # `src/generated/` too, so tests need the same read access.
@@ -50,7 +50,6 @@ fs_permissions = [
   { access = "read", path = "./foundry.toml" },
   { access = "read", path = "./.env.example" },
   { access = "read-write", path = "./.staged-config" },
-  { access = "read", path = "./script/build.sh" },
   { access = "read", path = "./subgraph" },
   { access = "read-write", path = "./src" },
 ]
@@ -76,7 +75,7 @@ forge-std = "1.17.0"
 # `IMetaBoardV1_2`, `IMetaV1_2`, `LibIMetaBoardV1_2` and `LibMeta` — the library
 # half `MetaBoard` is nothing but a delegation into.
 "rain-metadata" = "0.1.43"
-"rain-deploy" = "0.1.20"
+"rain-deploy" = "0.1.21"
 # `LibRainDeploySnapshot` — reached from `script/Build.sol` and the shipped
 # verify abstracts — emits the generated record via `LibCodeGen`/`LibFs`.
 "rain-sol-codegen" = "0.1.39"

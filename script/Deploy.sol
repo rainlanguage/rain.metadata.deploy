@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {RainDeployBroadcast} from "rain-deploy-0.1.20/src/abstract/RainDeployBroadcast.sol";
+import {RainDeployBroadcast} from "rain-deploy-0.1.21/src/abstract/RainDeployBroadcast.sol";
 import {MetaBoardDeploySuites} from "../src/abstract/MetaBoardDeploySuites.sol";
 
 /// @title Deploy
