@@ -75,7 +75,7 @@ forge-std = "1.17.0"
 # `IMetaBoardV1_2`, `IMetaV1_2`, `LibIMetaBoardV1_2` and `LibMeta` — the library
 # half `MetaBoard` is nothing but a delegation into.
 "rain-metadata" = "0.1.43"
-"rain-deploy" = "0.1.22"
+"rain-deploy" = "0.1.25"
 # `LibRainDeploySnapshot` — reached from `script/Build.sol` and the shipped
 # verify abstracts — emits the generated record via `LibCodeGen`/`LibFs`.
 "rain-sol-codegen" = "0.1.39"
