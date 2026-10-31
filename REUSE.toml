@@ -5,7 +5,6 @@ path = [
   ".gas-snapshot",
   ".github/workflows/**/",
   ".vscode/**/",
-  ".coderabbitai.yaml",
   ".env.example",
   ".gitignore",
   "Cargo.lock",
