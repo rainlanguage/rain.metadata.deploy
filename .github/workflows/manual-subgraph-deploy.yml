@@ -125,12 +125,9 @@ jobs:
           ORMI_DEPLOY_KEY: ${{ secrets.ORMI_DEPLOY_KEY }}
         run: |
           set -o pipefail
-          # flake.lock still pins the rainix that deploys with the Goldsky CLI.
-          # This rev is the rainix whose subgraph-deploy publishes to Ormi.
-          # Pinned so the step that holds the deploy key does not follow rainix
-          # main, and so the log lines parsed below stay the ones that rev prints.
+          # Shell from this repo's flake.lock, not rainix main: the deploy key step runs the reviewed rainix rev.
           deploy_status=0
-          nix develop github:rainlanguage/rainix/553ae011bbd472a60d64efb13a76c6600d7de66e#subgraph-shell -c subgraph-deploy 2>&1 | tee deploy.log || deploy_status=$?
+          nix develop .#subgraph-shell -c subgraph-deploy 2>&1 | tee deploy.log || deploy_status=$?
           echo
           # A skipped network prints "already deployed, skipping" and no URL.
           # A failed one prints "Deploy of <name>/<version> failed". Only a
