@@ -3,9 +3,9 @@
 pragma solidity =0.8.25;
 
 import {Test, Vm} from "forge-std-1.17.0/src/Test.sol";
-import {IMetaBoardV1_2} from "rain-metadata-0.1.43/src/interface/unstable/IMetaBoardV1_2.sol";
-import {NotRainMetaV1, META_MAGIC_NUMBER_V1} from "rain-metadata-0.1.43/src/interface/unstable/IMetaV1_2.sol";
-import {LibMeta} from "rain-metadata-0.1.43/src/lib/LibMeta.sol";
+import {IMetaBoardV1_2} from "rain-metadata-0.1.46/src/interface/unstable/IMetaBoardV1_2.sol";
+import {NotRainMetaV1, META_MAGIC_NUMBER_V1} from "rain-metadata-0.1.46/src/interface/unstable/IMetaV1_2.sol";
+import {LibMeta} from "rain-metadata-0.1.46/src/lib/LibMeta.sol";
 import {MetaBoard} from "src/concrete/MetaBoard.sol";
 import {TestLibIMetaBoardV1_2} from "./TestLibIMetaBoardV1_2.sol";
 
