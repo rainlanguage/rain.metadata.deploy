@@ -3,7 +3,7 @@
 pragma solidity =0.8.25;
 
 import {Test} from "forge-std-1.17.0/src/Test.sol";
-import {LibRainDeploy} from "rain-deploy-0.1.32/src/lib/LibRainDeploy.sol";
+import {LibRainDeploy} from "rain-deploy-0.1.33/src/lib/LibRainDeploy.sol";
 
 /// Thrown when `networks.json` names a network with no declared correspondence
 /// to a network this repo broadcasts to.
@@ -33,12 +33,7 @@ struct SubgraphDataSource {
 /// @title SubgraphRecordReader
 /// @notice Reads `subgraph/networks.json`: the network keys, the flattened
 /// datasources, and the `LibRainDeploy` network each Graph network name
-/// corresponds to. Shared between the record suite in
-/// `SubgraphDeployRecord.t.sol` and the fork suite in `SubgraphStartBlock.t.sol`,
-/// which must agree on what the file says while staying SEPARATE contracts: a
-/// contract boundary is what `forge test --match-contract` selects at, so an
-/// unreachable RPC endpoint can red the fork suite without touching an assertion
-/// that reads only this repo.
+/// corresponds to.
 abstract contract SubgraphRecordReader is Test {
     /// The subgraph's per-network deployment table, and the whole of this
     /// repo's share of the subgraph.
