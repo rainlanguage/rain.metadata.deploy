@@ -79,6 +79,8 @@ forge-std = "1.17.0"
 # `LibRainDeploySnapshot` — reached from `script/Build.sol` and the shipped
 # verify abstracts — emits the generated record via `LibCodeGen`/`LibFs`.
 "rain-sol-codegen" = "0.1.39"
+# `rain-deploy` imports it under `rain-string-0.3.10/`.
+"rain-string" = "0.3.10"
 # `ICloneableFactoryV6` and `LibICloneableFactoryV5` — `rain-deploy`'s mechanism libs import
 # them under `rain-factory-0.2.12/`.
 "rain-factory" = "0.2.14"
