@@ -81,9 +81,6 @@ forge-std = "1.17.0"
 "rain-sol-codegen" = "0.1.39"
 # `rain-deploy` imports it under `rain-string-0.3.10/`.
 "rain-string" = "0.3.10"
-# `ICloneableFactoryV6` and `LibICloneableFactoryV5` — `rain-deploy`'s mechanism libs import
-# them under `rain-factory-0.2.12/`.
-"rain-factory" = "0.2.14"
 # `IBeacon`, `UpgradeableBeacon`, `Ownable2Step` and `IERC5313` — `rain-deploy`'s
 # beacon libs import them under `@openzeppelin-contracts-5.7.0/`.
 "@openzeppelin-contracts" = "5.7.0"
