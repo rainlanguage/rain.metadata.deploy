@@ -2,10 +2,10 @@
 // SPDX-FileCopyrightText: Copyright (c) 2020 Rain Open Source Software Ltd
 pragma solidity =0.8.25;
 
-import {BuildScript, GeneratedContract} from "rain-deploy-0.1.35/src/abstract/BuildScript.sol";
-import {DeployDeclaration} from "rain-deploy-0.1.35/src/abstract/RainDeploySuitesBase.sol";
+import {BuildScript, GeneratedContract} from "rain-deploy-0.1.36/src/abstract/BuildScript.sol";
+import {DeployDeclaration} from "rain-deploy-0.1.36/src/abstract/RainDeploySuitesBase.sol";
 import {MetaBoardDeploySuites} from "../src/abstract/MetaBoardDeploySuites.sol";
-import {LibRainDeploySnapshot} from "rain-deploy-0.1.35/src/lib/LibRainDeploySnapshot.sol";
+import {LibRainDeploySnapshot} from "rain-deploy-0.1.36/src/lib/LibRainDeploySnapshot.sol";
 
 /// @title Build
 /// @notice Generates the deploy pins for every contract this repo deploys.
