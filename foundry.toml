@@ -8,7 +8,7 @@
 # `script/Build.sol`'s `cutRelease()` to locate the snapshot it freezes.
 [external.package]
 name = "rain-metadata-deploy"
-version = "0.1.5"
+version = "0.1.6"
 
 [profile.default]
 src = 'src'
@@ -75,7 +75,9 @@ forge-std = "1.17.0"
 # `IMetaBoardV1_2`, `IMetaV1_2`, `LibIMetaBoardV1_2` and `LibMeta` — the library
 # half `MetaBoard` is nothing but a delegation into.
 "rain-metadata" = "0.1.46"
-"rain-deploy" = "0.1.34"
+"rain-deploy" = "0.1.35"
+"rain-extrospection" = "0.1.30"
+"rain-solmem" = "0.1.28"
 # `LibRainDeploySnapshot` — reached from `script/Build.sol` and the shipped
 # verify abstracts — emits the generated record via `LibCodeGen`/`LibFs`.
 "rain-sol-codegen" = "0.1.39"
