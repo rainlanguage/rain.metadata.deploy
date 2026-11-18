@@ -71,6 +71,14 @@ import {
     DEPENDENCIES as MetaBoard_0_1_6_DEPENDENCIES
 } from "../generated/0_1_6/MetaBoard.sol";
 
+import {
+    DEPLOYED_ADDRESS as MetaBoard_0_1_7_DEPLOYED_ADDRESS,
+    BYTECODE_HASH as MetaBoard_0_1_7_BYTECODE_HASH,
+    CREATION_CODE as MetaBoard_0_1_7_CREATION_CODE,
+    RUNTIME_CODE as MetaBoard_0_1_7_RUNTIME_CODE,
+    DEPENDENCIES as MetaBoard_0_1_7_DEPENDENCIES
+} from "../generated/0_1_7/MetaBoard.sol";
+
 /// @title LibMetaBoardReleased
 /// @notice Every frozen release of `MetaBoard`: one entry per file in
 /// the append-only `src/generated/<tag>/` record, in tag order.
@@ -91,7 +99,7 @@ library LibMetaBoardReleased {
     /// Every frozen release, in tag order.
     /// @return The released suites.
     function releasedSuites() internal pure returns (DeploySuite[] memory) {
-        DeploySuite[] memory suites = new DeploySuite[](8);
+        DeploySuite[] memory suites = new DeploySuite[](9);
         suites[0] = DeploySuite({
             suite: "metaboard@0_0_0",
             creationCode: MetaBoard_0_0_0_CREATION_CODE,
@@ -184,6 +192,18 @@ library LibMetaBoardReleased {
             storedRuntimeCode: MetaBoard_0_1_6_RUNTIME_CODE,
             artifactPath: "src/concrete/MetaBoard.sol:MetaBoard",
             dependencies: abi.decode(MetaBoard_0_1_6_DEPENDENCIES, (DeployDependency[])),
+            mechanismData: LibRainDeployZoltuMechanism.mechanismData(),
+            networks: new string[](0),
+            describedByMeta: ""
+        });
+        suites[8] = DeploySuite({
+            suite: "metaboard@0_1_7",
+            creationCode: MetaBoard_0_1_7_CREATION_CODE,
+            storedDeployedAddress: MetaBoard_0_1_7_DEPLOYED_ADDRESS,
+            storedBytecodeHash: MetaBoard_0_1_7_BYTECODE_HASH,
+            storedRuntimeCode: MetaBoard_0_1_7_RUNTIME_CODE,
+            artifactPath: "src/concrete/MetaBoard.sol:MetaBoard",
+            dependencies: abi.decode(MetaBoard_0_1_7_DEPENDENCIES, (DeployDependency[])),
             mechanismData: LibRainDeployZoltuMechanism.mechanismData(),
             networks: new string[](0),
             describedByMeta: ""
