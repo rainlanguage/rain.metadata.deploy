@@ -14,10 +14,10 @@ integrity = "fa706c8a7caf3426c90f75e6aafa3224b0a6c899b490800cf6944e4ec42f9344"
 
 [[dependencies]]
 name = "rain-deploy"
-version = "0.1.36"
-url = "https://soldeer-revisions.s3.amazonaws.com/rain-deploy/0_1_36_18-11-2026_21:23:31_rain.zip"
-checksum = "948f51e922eb87998b28a0b83936215a7dbcabac8754efb32cc54a7c76d1d34d"
-integrity = "1c9ab753452f2e8c93a1487413391eb3147d17f02223e63f98791673147bfcb6"
+version = "0.1.37"
+url = "https://soldeer-revisions.s3.amazonaws.com/rain-deploy/0_1_37_19-11-2026_14:38:26_rain.zip"
+checksum = "92a4a0ddcd914dfc45364d6522ffc7c546134d3ce451174be022ac4851d9afa0"
+integrity = "9032a7c09348bf91468509b6f2c37f8cbc75a6098b404bcee5788a840da6c6c1"
 
 [[dependencies]]
 name = "rain-extrospection"
