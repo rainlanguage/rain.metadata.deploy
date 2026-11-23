@@ -75,7 +75,7 @@ forge-std = "1.17.0"
 # `IMetaBoardV1_2`, `IMetaV1_2`, `LibIMetaBoardV1_2` and `LibMeta` — the library
 # half `MetaBoard` is nothing but a delegation into.
 "rain-metadata" = "0.1.46"
-"rain-deploy" = "0.1.37"
+"rain-deploy" = "0.1.38"
 "rain-extrospection" = "0.1.31"
 "rain-solmem" = "0.1.28"
 # `LibRainDeploySnapshot` — reached from `script/Build.sol` and the shipped
@@ -104,6 +104,7 @@ flare = "${FLARE_RPC_URL}"
 hyperevm = "${HYPEREVM_RPC_URL}"
 polygon = "${POLYGON_RPC_URL}"
 robinhood = "${ROBINHOOD_RPC_URL}"
+zerog = "${ZEROG_RPC_URL}"
 # rain-deploy:generated:rpc_endpoints:end
 
 # `rainix-manual-sol-artifacts` passes `--verify` by default and exports exactly
@@ -120,4 +121,5 @@ flare = { key = "${CI_DEPLOY_FLARE_ETHERSCAN_API_KEY}", chain = 14 }
 hyperevm = { key = "${CI_DEPLOY_HYPEREVM_ETHERSCAN_API_KEY}", chain = 999 }
 polygon = { key = "${CI_DEPLOY_POLYGON_ETHERSCAN_API_KEY}", chain = 137 }
 robinhood = { key = "${CI_DEPLOY_ROBINHOOD_ETHERSCAN_API_KEY}", chain = 4663, url = "https://robinhoodchain.blockscout.com/api" }
+zerog = { key = "${CI_DEPLOY_ZEROG_ETHERSCAN_API_KEY}", chain = 16661, url = "https://chainscan.0g.ai/open/api" }
 # rain-deploy:generated:etherscan:end
